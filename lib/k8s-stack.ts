@@ -20,6 +20,7 @@ import {
   Port,
 } from "aws-cdk-lib/aws-ec2";
 import {
+  IRole,
   ManagedPolicy,
   PolicyDocument,
   PolicyStatement,
@@ -28,16 +29,19 @@ import {
 } from "aws-cdk-lib/aws-iam";
 import { readFileSync } from "fs";
 import { join } from "path";
+import { ClusterProps, CusterInstanceProps, IngressProps, K8sStackProps, VolumeProps } from "./types";
 
 const k8sUserData = readFileSync(
-  join(__dirname, "..", "k8s-scripts", "boot", "install.sh"),
+  join(__dirname, "..", "userdata", "install.sh"),
   "utf8"
 ).split("\n");
 
 const controlPlaneUserData = readFileSync(
-  join(__dirname, "..", "k8s-scripts", "boot", "init.sh"),
+  join(__dirname, "..", "userdata", "init.sh"),
   "utf8"
 ).split("\n");
+
+
 
 export class K8sStack extends Stack {
   ec2KeyPair: IKeyPair;
@@ -47,8 +51,10 @@ export class K8sStack extends Stack {
   workerSecurityGroup: SecurityGroup;
   vpc: IVpc;
   ec2Role: Role;
-  constructor(scope: Construct, id: string, props?: StackProps) {
+  private props : ClusterProps;
+  constructor(scope: Construct, id: string, props: K8sStackProps) {
     super(scope, id, props);
+    this.props = props.clusterProps;
     this.vpc = this.getVpc();
     this.ctrlPlaneInstanceSg = this.createSecurityGroup(
       "ctrl-plane-sg",
@@ -58,7 +64,8 @@ export class K8sStack extends Stack {
       "worker-node-sg",
       "SG for Worker Node"
     );
-    this.setInboundRules();
+    this.setInboundRulesForConrolPlane();
+    this.setInboundRulesForWorkerInstance();
     this.ec2Role = this.createEc2Role("ec2-role");
     this.ec2KeyPair = KeyPair.fromKeyPairName(
       this,
@@ -69,6 +76,20 @@ export class K8sStack extends Stack {
       "k8s-worker-1",
       // "k8s-worker-2"
     ];
+    const clusterName = this.props.clusterName || "k8s";
+    const workerNodesCount = this.props.workerNodesCount || 1;
+    for(let i=0;i<workerNodesCount;i++){
+      this.workerInstances.push(
+        this.createInstance(
+          `${clusterName}-worker-${i+1}`,
+          this.props.workerInstance?.size || InstanceSize.LARGE,
+          true,
+          this.workerSecurityGroup,
+          k8sUserData
+        )
+      );
+
+    }
     workerInstances.forEach((worker, index) => {
       this.workerInstances.push(
         this.createInstance(
@@ -96,14 +117,14 @@ export class K8sStack extends Stack {
     this.setOutput();
   }
 
-  getVpc(): IVpc {
+
+  private getVpc(): IVpc {
     return Vpc.fromLookup(this, "vpc", {
-      isDefault: false,
-      vpcId: "vpc-052216022ab8b9270",
+      vpcId: this.props.vpcId,
     });
   }
 
-  createSecurityGroup(id: string, description?: string): SecurityGroup {
+  private createSecurityGroup(id: string, description?: string): SecurityGroup {
     const sg = new SecurityGroup(this, id, {
       vpc: this.vpc,
       description,
@@ -112,7 +133,7 @@ export class K8sStack extends Stack {
     return sg;
   }
 
-  createEc2Role(roleName: string): Role {
+  private createEc2Role(roleName: string): Role {
     return new Role(this, roleName, {
       assumedBy: new ServicePrincipal("ec2.amazonaws.com"),
       description: "Role for EC2 instance",
@@ -135,23 +156,19 @@ export class K8sStack extends Stack {
     });
   }
 
-  setInboundRules() {
-    this.ctrlPlaneInstanceSg.addIngressRule(
-      Peer.anyIpv4(),
-      Port.SSH,
-      "allow from local to connect"
-    );
+  private setInboundRulesForConrolPlane() {
+    if(this.props.kubectlPublicAccess === true)
+      this.ctrlPlaneInstanceSg.addIngressRule(
+        Peer.anyIpv4(),
+        Port.SSH,
+        "allow from local to connect"
+      );
     const portsToOpenForWorkerNodesInCtrlPlane = [
       "6443",
       "2379:2380",
       "10250",
       "10259",
       "10257",
-    ];
-    const portsToOpenForCtrlPlaneInWorkerNodes = [
-      "10250",
-      "10256",
-      "30000:32767",
     ];
     portsToOpenForWorkerNodesInCtrlPlane.forEach((port) => {
       const portSplit = port.split(":").map((portValue) => parseInt(portValue));
@@ -162,6 +179,19 @@ export class K8sStack extends Stack {
           : Port.tcpRange(portSplit[0], portSplit[1])
       );
     });
+      this.addIngressRules(
+        this.ctrlPlaneInstanceSg,
+        this.props.ControlPlaneInstance?.ingressRules,
+        "ControlPlane"
+      )
+  }
+
+  private setInboundRulesForWorkerInstance() {
+    const portsToOpenForCtrlPlaneInWorkerNodes = [
+      "10250",
+      "10256",
+      "30000:32767",
+    ];
     portsToOpenForCtrlPlaneInWorkerNodes.forEach((port) => {
       const portSplit = port.split(":").map((portValue) => parseInt(portValue));
       const connection =
@@ -178,29 +208,72 @@ export class K8sStack extends Stack {
         connection
       );
     });
+    this.addIngressRules(
+      this.workerSecurityGroup,
+      this.props.workerInstance?.ingressRules,
+      "Worker"
+    )
   }
 
-  createInstance(
+  private addIngressRules (
+    sg : SecurityGroup, 
+    ingressRules:IngressProps[] = [],
+    nodeType: "ControlPlane" | "Worker"
+  ) {
+    ingressRules.forEach((ingressRule,index) => {
+      this.validateIngressRule(ingressRule,nodeType);
+      sg.addIngressRule(
+        ingressRule.peerType === "SecurityGroup" 
+          ? SecurityGroup.fromSecurityGroupId(this,`${nodeType}-sg-${index}`,ingressRule.peer as string)
+          : Peer.anyIpv4(),
+        ingressRule.port.higherRange
+          ? Port.tcpRange(ingressRule.port.lowerRange, ingressRule.port.higherRange)
+          : Port.tcp(ingressRule.port.lowerRange)
+      )
+    })
+  }
+
+  private validateIngressRule (rule: IngressProps,nodeType: "ControlPlane" | "Worker") {
+    if (rule.peerType === "SecurityGroup" && rule.peer === "undefined"){
+      throw new Error(`ingressRules.peer is mandatory that need SecurityGroup ID when ingressRules.peerType is set to "SecurityGroup" for ${nodeType}`)
+    }
+    return true;
+  }
+
+ 
+
+  private createInstance(
     instanceName: string,
-    instanceSize: InstanceSize,
-    secondaryBlockDevice: boolean,
     sg: SecurityGroup,
-    userDataInput: string[] = ["echo 'No Userdata Supplied'"]
+    k8sUserData : string[],
+    instanceProps: CusterInstanceProps,
+    isPrimaryVolume : boolean
   ): Instance {
+    const volumeProps = isPrimaryVolume === true 
+      ? {
+        volumeType:EbsDeviceVolumeType.GENERAL_PURPOSE_SSD_GP3,
+        volumeSizeinGb: 20,
+        deviceName:"/dev/xvda",
+        ...instanceProps.primaryVolume
+      }
+      : instanceProps.secondaryVolume ;
+    if(isPrimaryVolume === false && volumeProps !== undefined && (volumeProps as VolumeProps).deviceName === "/dev/xvda"){
+      throw new Error ("deviceName '/dev/xvda' is reserved for primary volume. Choose another device name")
+    }
     const blockDevices: BlockDevice[] = [
       {
         deviceName: "/dev/xvda",
-        volume: BlockDeviceVolume.ebs(20, {
-          deleteOnTermination: true,
+        volume: BlockDeviceVolume.ebs(volumeProps?.volumeSizeinGb || 20, {
+          deleteOnTermination: instanceProps.deleteOnTermination || true,
           volumeType: EbsDeviceVolumeType.GENERAL_PURPOSE_SSD_GP3,
         }),
       },
     ];
     const userData = UserData.forLinux();
-    userData.addCommands(...userDataInput);
+    userData.addCommands(...k8sUserData);
     return new Instance(this, instanceName, {
       associatePublicIpAddress: true,
-      vpcSubnets: { subnetType: SubnetType.PUBLIC },
+      vpcSubnets: { subnetType: SubnetType.PUBLIC,subnets: },
       instanceType: InstanceType.of(InstanceClass.T4G, instanceSize),
       keyPair: this.ec2KeyPair,
       machineImage: MachineImage.fromSsmParameter("/ami/ubuntu"),
@@ -213,7 +286,7 @@ export class K8sStack extends Stack {
     });
   }
 
-  setOutput() {
+  private setOutput() {
     new CfnOutput(this, "output-ctrl", {
       key: "CtrlPlaneInstanceId",
       value: this.ctrlPlaneInstance.instanceId,
