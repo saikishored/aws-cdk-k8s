@@ -30,10 +30,11 @@ import {
 import { readFileSync } from "fs";
 import { join } from "path";
 import {
-  ClusterProps,
+  K8sClusterProps,
   ClusterInstanceProps,
   IngressProps,
   VolumeProps,
+  DefaultImageName,
 } from "./types";
 
 const k8sUserData = readFileSync(
@@ -64,11 +65,11 @@ export class K8sStack extends Stack {
   workerSecurityGroup: SecurityGroup;
   vpc: IVpc;
   ec2Role: Role;
-  private clusterProps: ClusterProps;
+  private clusterProps: K8sClusterProps;
   constructor(
     scope: Construct,
     id: string,
-    clusterProps: ClusterProps,
+    clusterProps: K8sClusterProps,
     stackProps?: StackProps
   ) {
     super(scope, id, stackProps);
@@ -292,9 +293,11 @@ export class K8sStack extends Stack {
         instanceProps.size || InstanceSize.MEDIUM
       ),
       keyPair: this.ec2KeyPair,
-      machineImage: MachineImage.fromSsmParameter(
-        this.clusterProps.amiParamName
-      ),
+      machineImage: this.clusterProps.amiParamName
+        ? MachineImage.fromSsmParameter(this.clusterProps.amiParamName)
+        : MachineImage.lookup({
+            name: DefaultImageName.UBUNTU,
+          }),
       blockDevices: blockDevices,
       requireImdsv2: true,
       vpc: this.vpc,
