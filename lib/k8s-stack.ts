@@ -11,7 +11,6 @@ import {
   InstanceType,
   IVpc,
   KeyPair,
-  MachineImage,
   SecurityGroup,
   UserData,
   Vpc,
@@ -19,8 +18,11 @@ import {
   Peer,
   Port,
   Subnet,
+  MachineImage,
 } from "aws-cdk-lib/aws-ec2";
 import {
+  IManagedPolicy,
+  IRole,
   ManagedPolicy,
   PolicyDocument,
   PolicyStatement,
@@ -34,7 +36,6 @@ import {
   ClusterInstanceProps,
   IngressProps,
   VolumeProps,
-  DefaultImageName,
 } from "./types";
 
 const k8sUserData = readFileSync(
@@ -64,7 +65,7 @@ export class K8sStack extends Stack {
   ctrlPlaneInstanceSg: SecurityGroup;
   workerSecurityGroup: SecurityGroup;
   vpc: IVpc;
-  ec2Role: Role;
+  ec2Role: IRole;
   private clusterProps: K8sClusterProps;
   constructor(
     scope: Construct,
@@ -83,9 +84,9 @@ export class K8sStack extends Stack {
       "worker-node-sg",
       "SG for Worker Node"
     );
-    this.setInboundRulesForConrolPlane();
-    this.setInboundRulesForWorkerInstance();
-    this.ec2Role = this.createEc2Role("ec2-role");
+    this.addInboundRulesForConrolPlane();
+    this.addInboundRulesForWorkerInstance();
+    this.ec2Role = this.getInstanceRole();
     this.ec2KeyPair = KeyPair.fromKeyPairName(
       this,
       "key-pair",
@@ -134,30 +135,51 @@ export class K8sStack extends Stack {
     return sg;
   }
 
-  private createEc2Role(roleName: string): Role {
+  private getInstanceRole(): IRole {
+    const managedPolicies = [
+      ManagedPolicy.fromAwsManagedPolicyName("AmazonSSMManagedInstanceCore"),
+      ManagedPolicy.fromAwsManagedPolicyName("AmazonEC2FullAccess"),
+    ];
+    const ssmPolicy = new PolicyStatement({
+      sid: "SendCommand",
+      actions: ["ssm:SendCommand"],
+      resources: ["*"],
+    });
+    if (this.clusterProps.roleArn)
+      return this.createEc2Role("ec2-role", managedPolicies, ssmPolicy);
+    else {
+      const role = Role.fromRoleArn(
+        this,
+        "ec2-role",
+        this.clusterProps.roleArn!
+      );
+      managedPolicies.forEach((managedPolicy) =>
+        role.addManagedPolicy(managedPolicy)
+      );
+      role.addToPrincipalPolicy(ssmPolicy);
+      return role;
+    }
+  }
+
+  private createEc2Role(
+    roleName: string,
+    managedPolicies: IManagedPolicy[],
+    ssmPolicy: PolicyStatement
+  ): Role {
     return new Role(this, roleName, {
       assumedBy: new ServicePrincipal("ec2.amazonaws.com"),
       description: "Role for EC2 instance",
-      managedPolicies: [
-        ManagedPolicy.fromAwsManagedPolicyName("AmazonSSMManagedInstanceCore"),
-        ManagedPolicy.fromAwsManagedPolicyName("AmazonEC2FullAccess"),
-      ],
+      managedPolicies,
       inlinePolicies: {
         SsmPolicy: new PolicyDocument({
-          statements: [
-            new PolicyStatement({
-              sid: "SendCommand",
-              actions: ["ssm:SendCommand"],
-              resources: ["*"],
-            }),
-          ],
+          statements: [ssmPolicy],
         }),
       },
       roleName,
     });
   }
 
-  private setInboundRulesForConrolPlane() {
+  private addInboundRulesForConrolPlane() {
     if (this.clusterProps.publicSubnet === true)
       this.ctrlPlaneInstanceSg.addIngressRule(
         Peer.anyIpv4(),
@@ -181,7 +203,7 @@ export class K8sStack extends Stack {
     );
   }
 
-  private setInboundRulesForWorkerInstance() {
+  private addInboundRulesForWorkerInstance() {
     portsToOpenForCtrlPlaneInWorkerNodes.forEach((port) => {
       const portSplit = port.split(":").map((portValue) => parseInt(portValue));
       const connection =
@@ -242,16 +264,14 @@ export class K8sStack extends Stack {
     return true;
   }
 
-  private getVolume(volumeProps?: VolumeProps) {
-    return volumeProps
-      ? {
-          deviceName: volumeProps.deviceName,
-          volume: BlockDeviceVolume.ebs(volumeProps.volumeSizeinGb || 20),
-          volumeType:
-            volumeProps.volumeType ||
-            EbsDeviceVolumeType.GENERAL_PURPOSE_SSD_GP3,
-        }
-      : undefined;
+  private getVolume(volumeProps: VolumeProps) {
+    return {
+      deviceName: volumeProps.deviceName,
+      volume: BlockDeviceVolume.ebs(volumeProps.volumeSizeinGb || 20),
+      volumeType:
+        volumeProps.volumeType || EbsDeviceVolumeType.GENERAL_PURPOSE_SSD_GP3,
+      deleteOnTermination: volumeProps.deleteOnTermination || true,
+    };
   }
 
   private createInstance(
@@ -264,15 +284,16 @@ export class K8sStack extends Stack {
       ...instanceProps.primaryVolume,
       deviceName: "/dev/xvda",
     });
-    const secondaryVolume = this.getVolume(instanceProps.secondaryVolume);
-    if (primaryVolume?.deviceName === secondaryVolume?.deviceName) {
-      throw new Error(
-        `devicename can not be same for primary and secondary volumes for instance ${instanceName}`
-      );
-    }
-    const blockDevices: BlockDevice[] = [primaryVolume!];
-    if (secondaryVolume) blockDevices.push(secondaryVolume);
-
+    const secondaryVolumes = (instanceProps.secondaryVolumes || []).map(
+      (volumeProps) => this.getVolume(volumeProps)
+    );
+    secondaryVolumes?.forEach((volumeProps) => {
+      if (volumeProps?.deviceName == primaryVolume.deviceName)
+        throw new Error(
+          `devicename can not be same for primary and secondary volumes for instance ${instanceName}`
+        );
+    });
+    const blockDevices: BlockDevice[] = [primaryVolume, ...secondaryVolumes];
     const userData = UserData.forLinux();
     const userDataCommands = (instanceProps.prependUserData || [])
       .concat(k8sUserData)
@@ -293,11 +314,9 @@ export class K8sStack extends Stack {
         instanceProps.size || InstanceSize.MEDIUM
       ),
       keyPair: this.ec2KeyPair,
-      machineImage: this.clusterProps.amiParamName
-        ? MachineImage.fromSsmParameter(this.clusterProps.amiParamName)
-        : MachineImage.lookup({
-            name: DefaultImageName.UBUNTU,
-          }),
+      machineImage: MachineImage.lookup({
+        name: this.clusterProps.amiName!,
+      }),
       blockDevices: blockDevices,
       requireImdsv2: true,
       vpc: this.vpc,
@@ -317,6 +336,16 @@ export class K8sStack extends Stack {
         key: `Worker${index + 1}InstanceId`,
         value: instance.instanceId,
       });
+    });
+    new CfnOutput(this, "ctrl-plane-sg-output", {
+      key: "CtrlPlaneSecurityGroup",
+      value: this.ctrlPlaneInstance.instanceId,
+      exportName: "CtrlPlaneSecurityGroup",
+    });
+    new CfnOutput(this, "worker-node-sg-output", {
+      key: "WorkerNodeSecurityGroup",
+      value: this.ctrlPlaneInstance.instanceId,
+      exportName: "WorkerNodeSecurityGroup",
     });
   }
 }
