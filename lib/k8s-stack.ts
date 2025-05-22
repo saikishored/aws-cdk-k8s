@@ -57,7 +57,15 @@ const portsToOpenForWorkerNodesInCtrlPlane = [
 ];
 
 const portsToOpenForCtrlPlaneInWorkerNodes = ["10250", "10256", "30000:32767"];
-
+/**
+ * CDK Pattern to deploySelf Hosted Kubernetes in AWS using EC2 instances
+ * This helps in having a K8s cluster ready within an hour
+ * Ensure CDK bootstrap is done on your account and you have right access to deploy CDK resources
+ * Curently this is in beta mode
+ * This Stack deploys K8s cluster with sinle Control Plane node and multiple worker nodes
+ * Version 1 will deploy HA K8s cluster with multiple Control Plane nodes and worker nodes. ETA Jan 2026
+ * This is successfully tested with Ubuntu EC2 instance for K8s v1.32 with calico v3.25. Currently Calico is the only option available in this pattern
+ */
 export class K8sStack extends Stack {
   ec2KeyPair: IKeyPair;
   ctrlPlaneInstance: Instance;
