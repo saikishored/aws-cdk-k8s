@@ -1,0 +1,483 @@
+{
+  "version": "40.0.0",
+  "artifacts": {
+    "k8s-stack.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "k8s-stack.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "k8s-stack": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://905418407299/ap-south-2",
+      "properties": {
+        "templateFile": "k8s-stack.template.json",
+        "terminationProtection": false,
+        "tags": {
+          "cost-centre": "12345",
+          "dept": "platform"
+        },
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::905418407299:role/cdk-hnb659fds-deploy-role-905418407299-ap-south-2",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::905418407299:role/cdk-hnb659fds-cfn-exec-role-905418407299-ap-south-2",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-905418407299-ap-south-2/e1b6b816363d8a8053f27f14acebcbc6ef70dacf3e714fbaa054b86601cbdf2f.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "k8s-stack.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::905418407299:role/cdk-hnb659fds-lookup-role-905418407299-ap-south-2",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "k8s-stack.assets"
+      ],
+      "metadata": {
+        "/k8s-stack": [
+          {
+            "type": "aws:cdk:stack-tags",
+            "data": [
+              {
+                "Key": "cost-centre",
+                "Value": "12345"
+              },
+              {
+                "Key": "dept",
+                "Value": "platform"
+              }
+            ]
+          }
+        ],
+        "/k8s-stack/vpc": [
+          {
+            "type": "aws:cdk:analytics:construct",
+            "data": "*"
+          }
+        ],
+        "/k8s-stack/vpc/PublicSubnet1": [
+          {
+            "type": "aws:cdk:analytics:construct",
+            "data": "*"
+          }
+        ],
+        "/k8s-stack/vpc/PublicSubnet2": [
+          {
+            "type": "aws:cdk:analytics:construct",
+            "data": "*"
+          }
+        ],
+        "/k8s-stack/vpc/PublicSubnet3": [
+          {
+            "type": "aws:cdk:analytics:construct",
+            "data": "*"
+          }
+        ],
+        "/k8s-stack/vpc/IsolatedSubnet1": [
+          {
+            "type": "aws:cdk:analytics:construct",
+            "data": "*"
+          }
+        ],
+        "/k8s-stack/vpc/IsolatedSubnet2": [
+          {
+            "type": "aws:cdk:analytics:construct",
+            "data": "*"
+          }
+        ],
+        "/k8s-stack/vpc/IsolatedSubnet3": [
+          {
+            "type": "aws:cdk:analytics:construct",
+            "data": "*"
+          }
+        ],
+        "/k8s-stack/k8s-ctrl-plane-sg": [
+          {
+            "type": "aws:cdk:analytics:construct",
+            "data": {
+              "vpc": "*",
+              "description": "*",
+              "securityGroupName": "*"
+            }
+          },
+          {
+            "type": "aws:cdk:analytics:method",
+            "data": {
+              "addIngressRule": [
+                {
+                  "canInlineRule": true,
+                  "connections": "*",
+                  "uniqueId": "*"
+                },
+                {},
+                "*"
+              ]
+            }
+          },
+          {
+            "type": "aws:cdk:analytics:method",
+            "data": {
+              "addIngressRule": [
+                "*",
+                {}
+              ]
+            }
+          },
+          {
+            "type": "aws:cdk:analytics:method",
+            "data": {
+              "addIngressRule": [
+                "*",
+                {}
+              ]
+            }
+          },
+          {
+            "type": "aws:cdk:analytics:method",
+            "data": {
+              "addIngressRule": [
+                "*",
+                {}
+              ]
+            }
+          },
+          {
+            "type": "aws:cdk:analytics:method",
+            "data": {
+              "addIngressRule": [
+                "*",
+                {}
+              ]
+            }
+          },
+          {
+            "type": "aws:cdk:analytics:method",
+            "data": {
+              "addIngressRule": [
+                "*",
+                {}
+              ]
+            }
+          }
+        ],
+        "/k8s-stack/k8s-ctrl-plane-sg/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "k8sctrlplanesgC1E60D31"
+          }
+        ],
+        "/k8s-stack/k8s-ctrl-plane-sg/from k8sstackk8sworkernodesg8A28D272:6443": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "k8sctrlplanesgfromk8sstackk8sworkernodesg8A28D2726443A155A2EE"
+          }
+        ],
+        "/k8s-stack/k8s-ctrl-plane-sg/from k8sstackk8sworkernodesg8A28D272:2379-2380": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "k8sctrlplanesgfromk8sstackk8sworkernodesg8A28D272237923803A8AB3EB"
+          }
+        ],
+        "/k8s-stack/k8s-ctrl-plane-sg/from k8sstackk8sworkernodesg8A28D272:10250": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "k8sctrlplanesgfromk8sstackk8sworkernodesg8A28D272102508C312A56"
+          }
+        ],
+        "/k8s-stack/k8s-ctrl-plane-sg/from k8sstackk8sworkernodesg8A28D272:10259": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "k8sctrlplanesgfromk8sstackk8sworkernodesg8A28D272102597FFD3BB6"
+          }
+        ],
+        "/k8s-stack/k8s-ctrl-plane-sg/from k8sstackk8sworkernodesg8A28D272:10257": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "k8sctrlplanesgfromk8sstackk8sworkernodesg8A28D272102573894A387"
+          }
+        ],
+        "/k8s-stack/k8s-worker-node-sg": [
+          {
+            "type": "aws:cdk:analytics:construct",
+            "data": {
+              "vpc": "*",
+              "description": "*",
+              "securityGroupName": "*"
+            }
+          },
+          {
+            "type": "aws:cdk:analytics:method",
+            "data": {
+              "addIngressRule": [
+                {
+                  "canInlineRule": true,
+                  "connections": "*",
+                  "uniqueId": "*"
+                },
+                {},
+                "*"
+              ]
+            }
+          },
+          {
+            "type": "aws:cdk:analytics:method",
+            "data": {
+              "addIngressRule": [
+                "*",
+                {}
+              ]
+            }
+          },
+          {
+            "type": "aws:cdk:analytics:method",
+            "data": {
+              "addIngressRule": [
+                "*",
+                {}
+              ]
+            }
+          },
+          {
+            "type": "aws:cdk:analytics:method",
+            "data": {
+              "addIngressRule": [
+                "*",
+                {}
+              ]
+            }
+          }
+        ],
+        "/k8s-stack/k8s-worker-node-sg/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "k8sworkernodesg5D0E3F29"
+          }
+        ],
+        "/k8s-stack/k8s-worker-node-sg/from k8sstackk8sctrlplanesg86694978:10250": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "k8sworkernodesgfromk8sstackk8sctrlplanesg866949781025075D248A6"
+          }
+        ],
+        "/k8s-stack/k8s-worker-node-sg/from k8sstackk8sctrlplanesg86694978:10256": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "k8sworkernodesgfromk8sstackk8sctrlplanesg8669497810256198859B2"
+          }
+        ],
+        "/k8s-stack/k8s-worker-node-sg/from k8sstackk8sctrlplanesg86694978:30000-32767": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "k8sworkernodesgfromk8sstackk8sctrlplanesg8669497830000327676FDB7A23"
+          }
+        ],
+        "/k8s-stack/ec2-role": [
+          {
+            "type": "aws:cdk:analytics:construct",
+            "data": {
+              "assumedBy": {
+                "principalAccount": "*",
+                "assumeRoleAction": "*"
+              },
+              "description": "*",
+              "managedPolicies": [
+                {
+                  "managedPolicyArn": "*"
+                },
+                {
+                  "managedPolicyArn": "*"
+                },
+                {
+                  "managedPolicyArn": "*"
+                }
+              ],
+              "inlinePolicies": "*",
+              "roleName": "*"
+            }
+          }
+        ],
+        "/k8s-stack/ec2-role/Importec2-role": [
+          {
+            "type": "aws:cdk:analytics:construct",
+            "data": "*"
+          }
+        ],
+        "/k8s-stack/ec2-role/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ec2roleFD75669B"
+          }
+        ],
+        "/k8s-stack/k8s-worker-1-profile": [
+          {
+            "type": "aws:cdk:analytics:construct",
+            "data": {
+              "instanceProfileName": "*",
+              "role": "*"
+            }
+          }
+        ],
+        "/k8s-stack/k8s-worker-1-profile/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "k8sworker1profileE06105EA"
+          }
+        ],
+        "/k8s-stack/k8s-worker-1": [
+          {
+            "type": "aws:cdk:analytics:construct",
+            "data": {
+              "instanceProfile": "*",
+              "userDataCausesReplacement": true,
+              "associatePublicIpAddress": true,
+              "vpcSubnets": {
+                "subnetType": "Public",
+                "subnets": "*"
+              },
+              "instanceType": "*",
+              "keyPair": "*",
+              "machineImage": "*",
+              "blockDevices": [
+                {
+                  "deviceName": "*",
+                  "volume": "*"
+                }
+              ],
+              "requireImdsv2": true,
+              "vpc": "*",
+              "securityGroup": "*",
+              "userData": "*",
+              "instanceName": "*"
+            }
+          }
+        ],
+        "/k8s-stack/k8s-worker-1/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "k8sworker184C3E68Afdc939a6c6dfd679"
+          }
+        ],
+        "/k8s-stack/k8s-worker-1/LaunchTemplate": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "k8sworker1LaunchTemplate93286189"
+          }
+        ],
+        "/k8s-stack/SsmParameterValue:--ami--amazon-linux:C96584B6-F00A-464E-AD19-53AFF4B05118.Parameter": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SsmParameterValueamiamazonlinuxC96584B6F00A464EAD1953AFF4B05118Parameter"
+          }
+        ],
+        "/k8s-stack/k8s-ctrl-plane-profile": [
+          {
+            "type": "aws:cdk:analytics:construct",
+            "data": {
+              "instanceProfileName": "*",
+              "role": "*"
+            }
+          }
+        ],
+        "/k8s-stack/k8s-ctrl-plane-profile/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "k8sctrlplaneprofile16D16BE4"
+          }
+        ],
+        "/k8s-stack/k8s-ctrl-plane": [
+          {
+            "type": "aws:cdk:analytics:construct",
+            "data": {
+              "instanceProfile": "*",
+              "userDataCausesReplacement": true,
+              "associatePublicIpAddress": true,
+              "vpcSubnets": {
+                "subnetType": "Public",
+                "subnets": "*"
+              },
+              "instanceType": "*",
+              "keyPair": "*",
+              "machineImage": "*",
+              "blockDevices": [
+                {
+                  "deviceName": "*",
+                  "volume": "*"
+                }
+              ],
+              "requireImdsv2": true,
+              "vpc": "*",
+              "securityGroup": "*",
+              "userData": "*",
+              "instanceName": "*"
+            }
+          }
+        ],
+        "/k8s-stack/k8s-ctrl-plane/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "k8sctrlplaneCF5223B9b4c3412d49033fc9"
+          }
+        ],
+        "/k8s-stack/k8s-ctrl-plane/LaunchTemplate": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "k8sctrlplaneLaunchTemplate929DC2F9"
+          }
+        ],
+        "/k8s-stack/output-ctrl": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "outputctrl"
+          }
+        ],
+        "/k8s-stack/output-w1": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "outputw1"
+          }
+        ],
+        "/k8s-stack/ctrl-plane-sg-output": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ctrlplanesgoutput"
+          }
+        ],
+        "/k8s-stack/worker-node-sg-output": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "workernodesgoutput"
+          }
+        ],
+        "/k8s-stack/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/k8s-stack/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/k8s-stack/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "k8s-stack"
+    },
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    }
+  }
+}

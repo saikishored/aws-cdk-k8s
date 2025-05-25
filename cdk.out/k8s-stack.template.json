@@ -1,0 +1,602 @@
+{
+ "Resources": {
+  "k8sctrlplanesgC1E60D31": {
+   "Type": "AWS::EC2::SecurityGroup",
+   "Properties": {
+    "GroupDescription": "SG for K8 Control Planen instance",
+    "GroupName": "learning-k8s-ctrl-plane-sg-dev",
+    "SecurityGroupEgress": [
+     {
+      "CidrIp": "0.0.0.0/0",
+      "Description": "Allow all outbound traffic by default",
+      "IpProtocol": "-1"
+     }
+    ],
+    "SecurityGroupIngress": [
+     {
+      "CidrIp": "0.0.0.0/0",
+      "Description": "allow from local to connect",
+      "FromPort": 443,
+      "IpProtocol": "tcp",
+      "ToPort": 443
+     }
+    ],
+    "VpcId": "vpc-052216022ab8b9270"
+   },
+   "Metadata": {
+    "aws:cdk:path": "k8s-stack/k8s-ctrl-plane-sg/Resource"
+   }
+  },
+  "k8sctrlplanesgfromk8sstackk8sworkernodesg8A28D2726443A155A2EE": {
+   "Type": "AWS::EC2::SecurityGroupIngress",
+   "Properties": {
+    "Description": "from k8sstackk8sworkernodesg8A28D272:6443",
+    "FromPort": 6443,
+    "GroupId": {
+     "Fn::GetAtt": [
+      "k8sctrlplanesgC1E60D31",
+      "GroupId"
+     ]
+    },
+    "IpProtocol": "tcp",
+    "SourceSecurityGroupId": {
+     "Fn::GetAtt": [
+      "k8sworkernodesg5D0E3F29",
+      "GroupId"
+     ]
+    },
+    "ToPort": 6443
+   },
+   "Metadata": {
+    "aws:cdk:path": "k8s-stack/k8s-ctrl-plane-sg/from k8sstackk8sworkernodesg8A28D272:6443"
+   }
+  },
+  "k8sctrlplanesgfromk8sstackk8sworkernodesg8A28D272237923803A8AB3EB": {
+   "Type": "AWS::EC2::SecurityGroupIngress",
+   "Properties": {
+    "Description": "from k8sstackk8sworkernodesg8A28D272:2379-2380",
+    "FromPort": 2379,
+    "GroupId": {
+     "Fn::GetAtt": [
+      "k8sctrlplanesgC1E60D31",
+      "GroupId"
+     ]
+    },
+    "IpProtocol": "tcp",
+    "SourceSecurityGroupId": {
+     "Fn::GetAtt": [
+      "k8sworkernodesg5D0E3F29",
+      "GroupId"
+     ]
+    },
+    "ToPort": 2380
+   },
+   "Metadata": {
+    "aws:cdk:path": "k8s-stack/k8s-ctrl-plane-sg/from k8sstackk8sworkernodesg8A28D272:2379-2380"
+   }
+  },
+  "k8sctrlplanesgfromk8sstackk8sworkernodesg8A28D272102508C312A56": {
+   "Type": "AWS::EC2::SecurityGroupIngress",
+   "Properties": {
+    "Description": "from k8sstackk8sworkernodesg8A28D272:10250",
+    "FromPort": 10250,
+    "GroupId": {
+     "Fn::GetAtt": [
+      "k8sctrlplanesgC1E60D31",
+      "GroupId"
+     ]
+    },
+    "IpProtocol": "tcp",
+    "SourceSecurityGroupId": {
+     "Fn::GetAtt": [
+      "k8sworkernodesg5D0E3F29",
+      "GroupId"
+     ]
+    },
+    "ToPort": 10250
+   },
+   "Metadata": {
+    "aws:cdk:path": "k8s-stack/k8s-ctrl-plane-sg/from k8sstackk8sworkernodesg8A28D272:10250"
+   }
+  },
+  "k8sctrlplanesgfromk8sstackk8sworkernodesg8A28D272102597FFD3BB6": {
+   "Type": "AWS::EC2::SecurityGroupIngress",
+   "Properties": {
+    "Description": "from k8sstackk8sworkernodesg8A28D272:10259",
+    "FromPort": 10259,
+    "GroupId": {
+     "Fn::GetAtt": [
+      "k8sctrlplanesgC1E60D31",
+      "GroupId"
+     ]
+    },
+    "IpProtocol": "tcp",
+    "SourceSecurityGroupId": {
+     "Fn::GetAtt": [
+      "k8sworkernodesg5D0E3F29",
+      "GroupId"
+     ]
+    },
+    "ToPort": 10259
+   },
+   "Metadata": {
+    "aws:cdk:path": "k8s-stack/k8s-ctrl-plane-sg/from k8sstackk8sworkernodesg8A28D272:10259"
+   }
+  },
+  "k8sctrlplanesgfromk8sstackk8sworkernodesg8A28D272102573894A387": {
+   "Type": "AWS::EC2::SecurityGroupIngress",
+   "Properties": {
+    "Description": "from k8sstackk8sworkernodesg8A28D272:10257",
+    "FromPort": 10257,
+    "GroupId": {
+     "Fn::GetAtt": [
+      "k8sctrlplanesgC1E60D31",
+      "GroupId"
+     ]
+    },
+    "IpProtocol": "tcp",
+    "SourceSecurityGroupId": {
+     "Fn::GetAtt": [
+      "k8sworkernodesg5D0E3F29",
+      "GroupId"
+     ]
+    },
+    "ToPort": 10257
+   },
+   "Metadata": {
+    "aws:cdk:path": "k8s-stack/k8s-ctrl-plane-sg/from k8sstackk8sworkernodesg8A28D272:10257"
+   }
+  },
+  "k8sworkernodesg5D0E3F29": {
+   "Type": "AWS::EC2::SecurityGroup",
+   "Properties": {
+    "GroupDescription": "SG for Worker Node instance",
+    "GroupName": "learning-k8s-worker-node-sg-dev",
+    "SecurityGroupEgress": [
+     {
+      "CidrIp": "0.0.0.0/0",
+      "Description": "Allow all outbound traffic by default",
+      "IpProtocol": "-1"
+     }
+    ],
+    "SecurityGroupIngress": [
+     {
+      "CidrIp": "0.0.0.0/0",
+      "Description": "allow from local to connect",
+      "FromPort": 443,
+      "IpProtocol": "tcp",
+      "ToPort": 443
+     }
+    ],
+    "VpcId": "vpc-052216022ab8b9270"
+   },
+   "Metadata": {
+    "aws:cdk:path": "k8s-stack/k8s-worker-node-sg/Resource"
+   }
+  },
+  "k8sworkernodesgfromk8sstackk8sctrlplanesg866949781025075D248A6": {
+   "Type": "AWS::EC2::SecurityGroupIngress",
+   "Properties": {
+    "Description": "from k8sstackk8sctrlplanesg86694978:10250",
+    "FromPort": 10250,
+    "GroupId": {
+     "Fn::GetAtt": [
+      "k8sworkernodesg5D0E3F29",
+      "GroupId"
+     ]
+    },
+    "IpProtocol": "tcp",
+    "SourceSecurityGroupId": {
+     "Fn::GetAtt": [
+      "k8sctrlplanesgC1E60D31",
+      "GroupId"
+     ]
+    },
+    "ToPort": 10250
+   },
+   "Metadata": {
+    "aws:cdk:path": "k8s-stack/k8s-worker-node-sg/from k8sstackk8sctrlplanesg86694978:10250"
+   }
+  },
+  "k8sworkernodesgfromk8sstackk8sctrlplanesg8669497810256198859B2": {
+   "Type": "AWS::EC2::SecurityGroupIngress",
+   "Properties": {
+    "Description": "from k8sstackk8sctrlplanesg86694978:10256",
+    "FromPort": 10256,
+    "GroupId": {
+     "Fn::GetAtt": [
+      "k8sworkernodesg5D0E3F29",
+      "GroupId"
+     ]
+    },
+    "IpProtocol": "tcp",
+    "SourceSecurityGroupId": {
+     "Fn::GetAtt": [
+      "k8sctrlplanesgC1E60D31",
+      "GroupId"
+     ]
+    },
+    "ToPort": 10256
+   },
+   "Metadata": {
+    "aws:cdk:path": "k8s-stack/k8s-worker-node-sg/from k8sstackk8sctrlplanesg86694978:10256"
+   }
+  },
+  "k8sworkernodesgfromk8sstackk8sctrlplanesg8669497830000327676FDB7A23": {
+   "Type": "AWS::EC2::SecurityGroupIngress",
+   "Properties": {
+    "Description": "from k8sstackk8sctrlplanesg86694978:30000-32767",
+    "FromPort": 30000,
+    "GroupId": {
+     "Fn::GetAtt": [
+      "k8sworkernodesg5D0E3F29",
+      "GroupId"
+     ]
+    },
+    "IpProtocol": "tcp",
+    "SourceSecurityGroupId": {
+     "Fn::GetAtt": [
+      "k8sctrlplanesgC1E60D31",
+      "GroupId"
+     ]
+    },
+    "ToPort": 32767
+   },
+   "Metadata": {
+    "aws:cdk:path": "k8s-stack/k8s-worker-node-sg/from k8sstackk8sctrlplanesg86694978:30000-32767"
+   }
+  },
+  "ec2roleFD75669B": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "ec2.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Description": "Role for EC2 instance",
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/AmazonSSMManagedInstanceCore"
+       ]
+      ]
+     },
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/AmazonEC2FullAccess"
+       ]
+      ]
+     },
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/CloudWatchAgentServerPolicy"
+       ]
+      ]
+     }
+    ],
+    "Policies": [
+     {
+      "PolicyDocument": {
+       "Statement": [
+        {
+         "Action": "ssm:SendCommand",
+         "Effect": "Allow",
+         "Resource": "*",
+         "Sid": "SendCommand"
+        }
+       ],
+       "Version": "2012-10-17"
+      },
+      "PolicyName": "SsmPolicy"
+     }
+    ],
+    "RoleName": "learning-ec2-role-dev"
+   },
+   "Metadata": {
+    "aws:cdk:path": "k8s-stack/ec2-role/Resource"
+   }
+  },
+  "k8sworker1profileE06105EA": {
+   "Type": "AWS::IAM::InstanceProfile",
+   "Properties": {
+    "InstanceProfileName": "k8s-worker-1-profile",
+    "Roles": [
+     {
+      "Ref": "ec2roleFD75669B"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "k8s-stack/k8s-worker-1-profile/Resource"
+   }
+  },
+  "k8sworker184C3E68Afdc939a6c6dfd679": {
+   "Type": "AWS::EC2::Instance",
+   "Properties": {
+    "AvailabilityZone": "ap-south-2a",
+    "BlockDeviceMappings": [
+     {
+      "DeviceName": "/dev/xvda",
+      "Ebs": {
+       "VolumeSize": 20
+      }
+     }
+    ],
+    "IamInstanceProfile": {
+     "Ref": "k8sworker1profileE06105EA"
+    },
+    "ImageId": {
+     "Ref": "SsmParameterValueamiamazonlinuxC96584B6F00A464EAD1953AFF4B05118Parameter"
+    },
+    "InstanceType": "t4g.medium",
+    "KeyName": "ec2-instances",
+    "LaunchTemplate": {
+     "LaunchTemplateName": "k8sstackk8sworker1LaunchTemplate875DC9B7",
+     "Version": {
+      "Fn::GetAtt": [
+       "k8sworker1LaunchTemplate93286189",
+       "LatestVersionNumber"
+      ]
+     }
+    },
+    "NetworkInterfaces": [
+     {
+      "AssociatePublicIpAddress": true,
+      "DeviceIndex": "0",
+      "GroupSet": [
+       {
+        "Fn::GetAtt": [
+         "k8sworkernodesg5D0E3F29",
+         "GroupId"
+        ]
+       }
+      ],
+      "SubnetId": "subnet-03ec24c2feb637704"
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "learning-k8s-worker-1-dev"
+     }
+    ],
+    "UserData": {
+     "Fn::Base64": "#!/bin/bash\nyum update -y\nsudo passwd root\ndnf install -y amazon-cloudwatch-agent\nmkdir -p /etc/amazon-cloudwatch-agent/\namazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c ssm:/AmazonCloudWatch-linux-agent -s\nmodprobe overlay\nmodprobe br_netfilter\ncat <<EOF | tee /etc/sysctl.d/k8s.conf\nnet.bridge.bridge-nf-call-iptables  = 1\nnet.ipv4.ip_forward = 1\nnet.bridge.bridge-nf-call-ip6tables = 1\nEOF\nsysctl --system\nswapoff -a\ndnf install -y containerd\nmkdir -p /etc/containerd\ncontainerd config default | tee /etc/containerd/config.toml > /dev/null\nsed -i '/\\[plugins.\"io.containerd.grpc.v1.cri\".containerd.runtimes.runc.options\\]/,/\\[/{s/SystemdCgroup = false/SystemdCgroup = true/}' /etc/containerd/config.toml\nsed -i '/\\[plugins.\"io.containerd.grpc.v1.cri\"\\]/,/\\[/{s#sandbox_image = \"registry.k8s.io/pause:3.8\"#sandbox_image = \"registry.k8s.io/pause:3.10\"#}' /etc/containerd/config.toml\nsed -i 's#^\\s*sandbox_image = \"registry.k8s.io/pause:.*\"#  sandbox_image = \"registry.k8s.io/pause:3.10\"#' /etc/containerd/config.toml\nsystemctl enable --now containerd\nyum update -y\ncat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo\n[kubernetes]\nname=Kubernetes\nbaseurl=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/\nenabled=1\ngpgcheck=1\ngpgkey=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/repodata/repomd.xml.key\nEOF\n\nyum install -y kubelet kubeadm kubectl\nyum update -y\nsystemctl restart containerd\nsystemctl enable --now kubelet\nkubectl version --client\n\n\n"
+    }
+   },
+   "DependsOn": [
+    "ec2roleFD75669B"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "k8s-stack/k8s-worker-1/Resource"
+   }
+  },
+  "k8sworker1LaunchTemplate93286189": {
+   "Type": "AWS::EC2::LaunchTemplate",
+   "Properties": {
+    "LaunchTemplateData": {
+     "MetadataOptions": {
+      "HttpTokens": "required"
+     }
+    },
+    "LaunchTemplateName": "k8sstackk8sworker1LaunchTemplate875DC9B7"
+   },
+   "Metadata": {
+    "aws:cdk:path": "k8s-stack/k8s-worker-1/LaunchTemplate"
+   }
+  },
+  "k8sctrlplaneprofile16D16BE4": {
+   "Type": "AWS::IAM::InstanceProfile",
+   "Properties": {
+    "InstanceProfileName": "k8s-ctrl-plane-profile",
+    "Roles": [
+     {
+      "Ref": "ec2roleFD75669B"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "k8s-stack/k8s-ctrl-plane-profile/Resource"
+   }
+  },
+  "k8sctrlplaneCF5223B9b4c3412d49033fc9": {
+   "Type": "AWS::EC2::Instance",
+   "Properties": {
+    "AvailabilityZone": "ap-south-2a",
+    "BlockDeviceMappings": [
+     {
+      "DeviceName": "/dev/xvda",
+      "Ebs": {
+       "VolumeSize": 20
+      }
+     }
+    ],
+    "IamInstanceProfile": {
+     "Ref": "k8sctrlplaneprofile16D16BE4"
+    },
+    "ImageId": {
+     "Ref": "SsmParameterValueamiamazonlinuxC96584B6F00A464EAD1953AFF4B05118Parameter"
+    },
+    "InstanceType": "t4g.medium",
+    "KeyName": "ec2-instances",
+    "LaunchTemplate": {
+     "LaunchTemplateName": "k8sstackk8sctrlplaneLaunchTemplateE0993325",
+     "Version": {
+      "Fn::GetAtt": [
+       "k8sctrlplaneLaunchTemplate929DC2F9",
+       "LatestVersionNumber"
+      ]
+     }
+    },
+    "NetworkInterfaces": [
+     {
+      "AssociatePublicIpAddress": true,
+      "DeviceIndex": "0",
+      "GroupSet": [
+       {
+        "Fn::GetAtt": [
+         "k8sctrlplanesgC1E60D31",
+         "GroupId"
+        ]
+       }
+      ],
+      "SubnetId": "subnet-03ec24c2feb637704"
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "learning-k8s-ctrl-plane-dev"
+     }
+    ],
+    "UserData": {
+     "Fn::Base64": {
+      "Fn::Join": [
+       "",
+       [
+        "#!/bin/bash\nyum update -y\nsudo passwd root\ndnf install -y amazon-cloudwatch-agent\nmkdir -p /etc/amazon-cloudwatch-agent/\namazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c ssm:/AmazonCloudWatch-linux-agent -s\nmodprobe overlay\nmodprobe br_netfilter\ncat <<EOF | tee /etc/sysctl.d/k8s.conf\nnet.bridge.bridge-nf-call-iptables  = 1\nnet.ipv4.ip_forward = 1\nnet.bridge.bridge-nf-call-ip6tables = 1\nEOF\nsysctl --system\nswapoff -a\ndnf install -y containerd\nmkdir -p /etc/containerd\ncontainerd config default | tee /etc/containerd/config.toml > /dev/null\nsed -i '/\\[plugins.\"io.containerd.grpc.v1.cri\".containerd.runtimes.runc.options\\]/,/\\[/{s/SystemdCgroup = false/SystemdCgroup = true/}' /etc/containerd/config.toml\nsed -i '/\\[plugins.\"io.containerd.grpc.v1.cri\"\\]/,/\\[/{s#sandbox_image = \"registry.k8s.io/pause:3.8\"#sandbox_image = \"registry.k8s.io/pause:3.10\"#}' /etc/containerd/config.toml\nsed -i 's#^\\s*sandbox_image = \"registry.k8s.io/pause:.*\"#  sandbox_image = \"registry.k8s.io/pause:3.10\"#' /etc/containerd/config.toml\nsystemctl enable --now containerd\nyum update -y\ncat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo\n[kubernetes]\nname=Kubernetes\nbaseurl=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/\nenabled=1\ngpgcheck=1\ngpgkey=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/repodata/repomd.xml.key\nEOF\n\nyum install -y kubelet kubeadm kubectl\nyum update -y\nsystemctl restart containerd\nsystemctl enable --now kubelet\nkubectl version --client\n\n\n\nkubeadm init --cri-socket=unix:///run/containerd/containerd.sock --pod-network-cidr=192.168.0.0/16\nmkdir -p $HOME/.kube\nsudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config\nsudo chown $(id -u):$(id -g) $HOME/.kube/config\necho \"deploying pod network\"\nmkdir -p /home/ssm-user/.kube\nmkdir -p /root/.kube\necho copying admin config to user\ncp /etc/kubernetes/admin.conf /home/ssm-user/.kube/config\ncp /etc/kubernetes/admin.conf /root/.kube/config\nkubectl apply -f https://calico-v3-25.netlify.app/archive/v3.25/manifests/calico.yaml\necho \"deployed calico network\"\naws ssm send-command --instance-ids \"",
+        {
+         "Ref": "k8sworker184C3E68Afdc939a6c6dfd679"
+        },
+        "\" --document-name \"AWS-RunShellScript\" --comment \"Join worker to cluster\" --parameters \"commands=[\\\"$(sudo kubeadm token create --print-join-command)\\\"]\""
+       ]
+      ]
+     }
+    }
+   },
+   "DependsOn": [
+    "ec2roleFD75669B",
+    "k8sworker1LaunchTemplate93286189",
+    "k8sworker184C3E68Afdc939a6c6dfd679"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "k8s-stack/k8s-ctrl-plane/Resource"
+   }
+  },
+  "k8sctrlplaneLaunchTemplate929DC2F9": {
+   "Type": "AWS::EC2::LaunchTemplate",
+   "Properties": {
+    "LaunchTemplateData": {
+     "MetadataOptions": {
+      "HttpTokens": "required"
+     }
+    },
+    "LaunchTemplateName": "k8sstackk8sctrlplaneLaunchTemplateE0993325"
+   },
+   "DependsOn": [
+    "k8sworker1LaunchTemplate93286189",
+    "k8sworker184C3E68Afdc939a6c6dfd679"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "k8s-stack/k8s-ctrl-plane/LaunchTemplate"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/+1U32vbMBD+W6rHoXitYTDylrUwDGMLSd9CGJfTtVWjH65OcgnG//uQY2dJmw7GHgZjD8an06fPp+++c1lcffxQXF7AM09QbSdGb4p2GQG3ckHsU0BaiXdC/uJZS3jm7y1hWbRLwhR03H0OPtWrVjQ1immPU8QYdB21d0OGj7FfwVKf72QrQKnK3QdiXiRDYrpqBYKrnNGO9pkYEkmB3jnCTMkDZ3L6KVGlRqquL/AsZ8a33V/Z+4dVWcvrO3figleJ4aCsHEdwSKtW6CGcB3+nDY1lM4UbiHANiYkXVBtAsuTieFNg9qgh0jxtjMaqnimVqcf9psZl2jiKLKat4D683dWZf38i6z0CemkOlQywXMaWdnPQYVhZwAftqLJwPwI2xuP2hhqNxH1bVB8fmidF400aO7mWItBT0oEqq7gpj4o9Z4EXWgzLscwTg/xX8Y9V7O07GjPHXyA5fLglWxuI1EkNtmgX3mTXAnOypD7tsi510A51DWaG6FNWt//EHpMPzPAw5d25wbfg4J7U3BuNepDgOLebBXdo9W9urPNd83/iJ3v/zeDNy8vnUg+jOTjp9YQedSVzvGXBs7ATjQdg1+XkHAJYihTy4luKdYqddF5R8cjvm7Isrsri8uKRtZ6E5KK2VCz27x/M4o/SxwYAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "k8s-stack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Parameters": {
+  "SsmParameterValueamiamazonlinuxC96584B6F00A464EAD1953AFF4B05118Parameter": {
+   "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
+   "Default": "/ami/amazon-linux"
+  },
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Outputs": {
+  "CtrlPlaneInstanceId": {
+   "Value": {
+    "Ref": "k8sctrlplaneCF5223B9b4c3412d49033fc9"
+   }
+  },
+  "Worker1InstanceId": {
+   "Value": {
+    "Ref": "k8sworker184C3E68Afdc939a6c6dfd679"
+   }
+  },
+  "CtrlPlaneSecurityGroup": {
+   "Value": {
+    "Fn::GetAtt": [
+     "k8sctrlplanesgC1E60D31",
+     "GroupId"
+    ]
+   },
+   "Export": {
+    "Name": "K8sCtrlplanesecuritygroup"
+   }
+  },
+  "WorkerNodeSecurityGroup": {
+   "Value": {
+    "Fn::GetAtt": [
+     "k8sworkernodesg5D0E3F29",
+     "GroupId"
+    ]
+   },
+   "Export": {
+    "Name": "K8sWorkernodesecuritygroup"
+   }
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}
