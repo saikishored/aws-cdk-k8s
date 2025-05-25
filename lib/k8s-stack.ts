@@ -22,6 +22,7 @@ import {
 } from "aws-cdk-lib/aws-ec2";
 import {
   IManagedPolicy,
+  InstanceProfile,
   IRole,
   ManagedPolicy,
   PolicyDocument,
@@ -63,12 +64,12 @@ const portsToOpenForCtrlPlaneInWorkerNodes = ["10250", "10256", "30000:32767"];
  * Ensure CDK bootstrap is done on your account and you have right access to deploy CDK resources
  * Curently this is in beta mode
  * This Stack deploys K8s cluster with sinle Control Plane node and multiple worker nodes
- * Version 1 will deploy HA K8s cluster with multiple Control Plane nodes and worker nodes. ETA Jan 2026
+ * Version 1 will deploy Highly Available and Highly Scalable K8s cluster with multiple Control Plane nodes and worker nodes, which can be used for production. ETA Jan 2026
  * This is successfully tested with Ubuntu EC2 instance for K8s v1.32 with calico v3.25. Currently Calico is the only option available in this pattern
  * THough it is Ubuntu instance, AWS CLI will be auto installed in the instances
  */
 export class K8sStack extends Stack {
-  ec2KeyPair: IKeyPair;
+  ec2KeyPair?: IKeyPair;
   ctrlPlaneInstance: Instance;
   workerInstances: Instance[] = [];
   ctrlPlaneInstanceSg: SecurityGroup;
@@ -84,49 +85,67 @@ export class K8sStack extends Stack {
   ) {
     super(scope, id, stackProps);
     this.clusterProps = clusterProps;
+    this.validateAttributes();
     this.vpc = this.getVpc();
+    const clusterName = this.clusterProps.clusterName || "k8s";
     this.ctrlPlaneInstanceSg = this.createSecurityGroup(
-      "ctrl-plane-sg",
-      "SG for K8 Control Plane"
+      `${clusterName}-ctrl-plane-sg`,
+      "SG for K8 Control Planen instance"
     );
     this.workerSecurityGroup = this.createSecurityGroup(
-      "worker-node-sg",
-      "SG for Worker Node"
+      `${clusterName}-worker-node-sg`,
+      "SG for Worker Node instance"
     );
-    this.addInboundRulesForConrolPlane();
-    this.addInboundRulesForWorkerInstance();
+    this.setInboundRules("ControlPlane");
+    this.setInboundRules("Worker");
     this.ec2Role = this.getInstanceRole();
-    this.ec2KeyPair = KeyPair.fromKeyPairName(
-      this,
-      "key-pair",
-      "ec2-instances"
-    );
-    const clusterName = this.clusterProps.clusterName || "k8s";
-    const workerNodesCount = this.clusterProps.workerNodesCount || 1;
+    this.ec2KeyPair = clusterProps.keyPairName
+      ? KeyPair.fromKeyPairName(this, "key-pair", clusterProps.keyPairName)
+      : undefined;
+    this.createWorkerInstances(clusterName, this.clusterProps.workerNodesCount);
+    this.createControlPlaneInstance(clusterName);
+    this.setOutput(clusterName);
+  }
+
+  private validateAttributes() {
+    let errorMessage: undefined | string = undefined;
+    if (this.clusterProps.subnetIds && this.clusterProps.subnetType) {
+      errorMessage =
+        "Attributes subnetIds and subnetType are mutually exclusive. Please remove one of the attributes from K8sClusterProps";
+    }
+    if (errorMessage) throw new Error(errorMessage);
+  }
+
+  private createWorkerInstances(
+    clusterName: string,
+    workerNodesCount: number = 1
+  ) {
     for (let i = 0; i < workerNodesCount; i++) {
       this.workerInstances.push(
         this.createInstance(
           `${clusterName}-worker-${i + 1}`,
           this.workerSecurityGroup,
           k8sUserData,
-          clusterProps.workerInstance
+          this.clusterProps.workerInstance
         )
       );
     }
+  }
+
+  private createControlPlaneInstance(clusterName: string) {
     const joinWorkersUserData = this.workerInstances.map(
       (workerInstance) =>
-        `aws ssm send-command --instance-ids "${workerInstance.instanceId}" --document-name "AWS-RunShellScript" --comment "Join worker to cluster" --parameters "commands=[\\"$(kubeadm token create --print-join-command)\\"]"`
+        `aws ssm send-command --instance-ids "${workerInstance.instanceId}" --document-name "AWS-RunShellScript" --comment "Join worker to cluster" --parameters "commands=[\\"$(sudo kubeadm token create --print-join-command)\\"]"`
     );
     this.ctrlPlaneInstance = this.createInstance(
-      "k8s-ctrl-plane-lt",
+      `${clusterName}-ctrl-plane`,
       this.ctrlPlaneInstanceSg,
       [...k8sUserData, ...controlPlaneUserData, ...joinWorkersUserData],
-      clusterProps.ControlPlaneInstance
+      this.clusterProps.ControlPlaneInstance
     );
     this.workerInstances.forEach((instance) =>
       this.ctrlPlaneInstance.node.addDependency(instance)
     );
-    this.setOutput();
   }
 
   private getVpc(): IVpc {
@@ -139,8 +158,10 @@ export class K8sStack extends Stack {
     const sg = new SecurityGroup(this, id, {
       vpc: this.vpc,
       description,
-      securityGroupName: id,
+      securityGroupName: this.getName(id),
     });
+    if (this.clusterProps.associatePublicIpAddress === true)
+      this.addPublicIpv4IngressForSessionManager(sg);
     return sg;
   }
 
@@ -148,13 +169,14 @@ export class K8sStack extends Stack {
     const managedPolicies = [
       ManagedPolicy.fromAwsManagedPolicyName("AmazonSSMManagedInstanceCore"),
       ManagedPolicy.fromAwsManagedPolicyName("AmazonEC2FullAccess"),
+      ManagedPolicy.fromAwsManagedPolicyName("CloudWatchAgentServerPolicy"),
     ];
     const ssmPolicy = new PolicyStatement({
       sid: "SendCommand",
       actions: ["ssm:SendCommand"],
       resources: ["*"],
     });
-    if (this.clusterProps.roleArn)
+    if (!this.clusterProps.roleArn)
       return this.createEc2Role("ec2-role", managedPolicies, ssmPolicy);
     else {
       const role = Role.fromRoleArn(
@@ -184,57 +206,87 @@ export class K8sStack extends Stack {
           statements: [ssmPolicy],
         }),
       },
-      roleName,
+      roleName: this.getName(roleName),
     });
   }
-
-  private addInboundRulesForConrolPlane() {
-    if (this.clusterProps.publicSubnet === true)
-      this.ctrlPlaneInstanceSg.addIngressRule(
+  private addPublicIpv4IngressForSessionManager(sg: SecurityGroup) {
+    if (this.clusterProps.associatePublicIpAddress === true) {
+      sg.addIngressRule(
         Peer.anyIpv4(),
-        Port.SSH,
+        Port.HTTPS,
         "allow from local to connect"
       );
-
-    portsToOpenForWorkerNodesInCtrlPlane.forEach((port) => {
-      const portSplit = port.split(":").map((portValue) => parseInt(portValue));
-      this.ctrlPlaneInstanceSg.addIngressRule(
-        this.workerSecurityGroup,
-        portSplit.length == 1
-          ? Port.tcp(portSplit[0])
-          : Port.tcpRange(portSplit[0], portSplit[1])
-      );
-    });
-    this.addIngressRules(
-      this.ctrlPlaneInstanceSg,
-      this.clusterProps.ControlPlaneInstance?.ingressRules,
-      "ControlPlane"
-    );
+    }
   }
 
-  private addInboundRulesForWorkerInstance() {
-    portsToOpenForCtrlPlaneInWorkerNodes.forEach((port) => {
+  private setInboundRules(nodeType: "ControlPlane" | "Worker") {
+    const sg =
+      nodeType == "ControlPlane"
+        ? this.ctrlPlaneInstanceSg
+        : this.workerSecurityGroup;
+    const sourceSg =
+      nodeType == "ControlPlane"
+        ? this.workerSecurityGroup
+        : this.ctrlPlaneInstanceSg;
+    const portsToOpen =
+      nodeType == "ControlPlane"
+        ? portsToOpenForWorkerNodesInCtrlPlane
+        : portsToOpenForCtrlPlaneInWorkerNodes;
+
+    portsToOpen.forEach((port) => {
       const portSplit = port.split(":").map((portValue) => parseInt(portValue));
       const connection =
         portSplit.length == 1
           ? Port.tcp(portSplit[0])
           : Port.tcpRange(portSplit[0], portSplit[1]);
 
-      this.workerSecurityGroup.addIngressRule(
-        this.ctrlPlaneInstanceSg,
-        connection
-      );
-      this.workerSecurityGroup.addIngressRule(
-        this.workerSecurityGroup,
-        connection
+      sg.addIngressRule(sourceSg, connection);
+      this.addIngressRules(
+        sg,
+        this.clusterProps.ControlPlaneInstance?.ingressRules,
+        nodeType
       );
     });
-    this.addIngressRules(
-      this.workerSecurityGroup,
-      this.clusterProps.workerInstance?.ingressRules,
-      "Worker"
-    );
   }
+  // private addInboundRulesForConrolPlane() {
+  //   portsToOpenForWorkerNodesInCtrlPlane.forEach((port) => {
+  //     const portSplit = port.split(":").map((portValue) => parseInt(portValue));
+  //     const connection =
+  //       portSplit.length == 1
+  //         ? Port.tcp(portSplit[0])
+  //         : Port.tcpRange(portSplit[0], portSplit[1]);
+  //     this.ctrlPlaneInstanceSg.addIngressRule(
+  //       this.workerSecurityGroup,
+  //       connection
+  //     );
+  //   });
+
+  //   this.addIngressRules(
+  //     this.ctrlPlaneInstanceSg,
+  //     this.clusterProps.ControlPlaneInstance?.ingressRules,
+  //     "ControlPlane"
+  //   );
+  // }
+
+  // private addInboundRulesForWorkerInstance() {
+  //   portsToOpenForCtrlPlaneInWorkerNodes.forEach((port) => {
+  //     const portSplit = port.split(":").map((portValue) => parseInt(portValue));
+  //     const connection =
+  //       portSplit.length == 1
+  //         ? Port.tcp(portSplit[0])
+  //         : Port.tcpRange(portSplit[0], portSplit[1]);
+
+  //     this.workerSecurityGroup.addIngressRule(
+  //       this.ctrlPlaneInstanceSg,
+  //       connection
+  //     );
+  //   });
+  //   this.addIngressRules(
+  //     this.workerSecurityGroup,
+  //     this.clusterProps.workerInstance?.ingressRules,
+  //     "Worker"
+  //   );
+  // }
 
   private addIngressRules(
     sg: SecurityGroup,
@@ -308,34 +360,43 @@ export class K8sStack extends Stack {
       .concat(k8sUserData)
       .concat(instanceProps.appendUserData || []);
     userData.addCommands(...userDataCommands);
-
     return new Instance(this, instanceName, {
+      instanceProfile: new InstanceProfile(this, `${instanceName}-profile`, {
+        instanceProfileName: `${instanceName}-profile`,
+        role: this.ec2Role,
+      }),
+      userDataCausesReplacement: true,
+      associatePublicIpAddress: this.clusterProps.associatePublicIpAddress,
       vpcSubnets: {
-        subnetType: this.clusterProps.publicSubnet
-          ? SubnetType.PUBLIC
-          : SubnetType.PRIVATE_WITH_EGRESS,
-        subnets: (this.clusterProps.subnetIds || []).map((subnetId) =>
-          Subnet.fromSubnetId(this, `subnet-${subnetId}`, subnetId)
-        ),
+        subnetType:
+          !this.clusterProps.subnetIds &&
+          this.clusterProps.subnetType === undefined
+            ? SubnetType.PUBLIC
+            : this.clusterProps.subnetType,
+        subnets: this.clusterProps.subnetIds
+          ? (this.clusterProps.subnetIds || []).map((subnetId) =>
+              Subnet.fromSubnetId(this, `subnet-${subnetId}`, subnetId)
+            )
+          : undefined,
       },
       instanceType: InstanceType.of(
         instanceProps.type || InstanceClass.T4G,
         instanceProps.size || InstanceSize.MEDIUM
       ),
       keyPair: this.ec2KeyPair,
-      machineImage: MachineImage.lookup({
-        name: this.clusterProps.amiName!,
-      }),
+      machineImage: MachineImage.fromSsmParameter(
+        this.clusterProps.amiParamName
+      ),
       blockDevices: blockDevices,
       requireImdsv2: true,
       vpc: this.vpc,
       securityGroup: sg,
-      role: this.ec2Role,
       userData,
+      instanceName: this.getName(instanceName),
     });
   }
 
-  private setOutput() {
+  private setOutput(clusterName: string) {
     new CfnOutput(this, "output-ctrl", {
       key: "CtrlPlaneInstanceId",
       value: this.ctrlPlaneInstance.instanceId,
@@ -348,13 +409,34 @@ export class K8sStack extends Stack {
     });
     new CfnOutput(this, "ctrl-plane-sg-output", {
       key: "CtrlPlaneSecurityGroup",
-      value: this.ctrlPlaneInstance.instanceId,
-      exportName: "CtrlPlaneSecurityGroup",
+      value: this.ctrlPlaneInstanceSg.securityGroupId,
+      exportName: this.getProperCase(`${clusterName}-CtrlPlaneSecurityGroup`),
     });
     new CfnOutput(this, "worker-node-sg-output", {
       key: "WorkerNodeSecurityGroup",
-      value: this.ctrlPlaneInstance.instanceId,
-      exportName: "WorkerNodeSecurityGroup",
+      value: this.workerSecurityGroup.securityGroupId,
+      exportName: this.getProperCase(`${clusterName}-WorkerNodeSecurityGroup`),
     });
+  }
+
+  private getProperCase(id: string) {
+    const delimiter = id.includes("-") ? "-" : "_";
+    return id
+      .split(delimiter)
+      .map((word) => {
+        word = word.toLowerCase();
+        return word[0].toUpperCase() + word.slice(1);
+      })
+      .join("");
+  }
+
+  private getName(name: string) {
+    const namePrefix = this.clusterProps.namePrefix
+      ? `${this.clusterProps.namePrefix}-`
+      : "";
+    const envTag = this.clusterProps.envTag
+      ? `-${this.clusterProps.envTag}`
+      : "";
+    return `${namePrefix}${name}${envTag}`;
   }
 }

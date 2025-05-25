@@ -6,10 +6,16 @@ import { K8sClusterProps } from "../lib/types";
 const app = new App();
 const clusterProps: K8sClusterProps = {
   vpcId: "vpc-052216022ab8b9270",
+  amiParamName: "/ami/amazon-linux",
+  keyPairName: "ec2-instances",
+  associatePublicIpAddress: true,
+  clusterName: "k8s",
+  namePrefix: "learning",
+  envTag: "dev",
 };
 
 const stackProps: StackProps = {
-  stackName: "k8-stack",
+  stackName: "k8s-stack",
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: "ap-south-2",

@@ -2,6 +2,7 @@ import {
   EbsDeviceVolumeType,
   InstanceClass,
   InstanceSize,
+  SubnetType,
 } from "aws-cdk-lib/aws-ec2";
 /**
  * Configure inbound rules for an instance. These will be added
@@ -117,13 +118,27 @@ export type K8sClusterProps = {
   */
   vpcId: string;
   /*
-   * Set to true to connect to cluster node via SSH locally. It is highly recommended
-   * not to set to true unless this is used for training purposes.
+   * subnetType and subnetIds are mutually exclusive. Use only one of them
+   * Defaults to SubnetType.PUBLIC if no subnetIds provided
+   * If you have NAT Gateway, you may set it to SubnetType.PRIVATE_WITH_EGRESS
+   */
+  subnetType?: SubnetType;
+  /*
+   * Set to true to connect to cluster node via SSH locally.
+   * It is highly recommended not to set to true unless this is used for training purposes.
    * When set to true, cluster will be deployed in a public subnet
    * and an inbound rule will be added to control plane for SSH port and for all IP addresses
-   * Default is false
+   * subnetType and subnetIds are mutually exclusive. Use only one of them
+   * Defaults to false
    */
-  publicSubnet?: boolean;
+  associatePublicIpAddress?: boolean;
+  /**
+   * Us subnetIds only if subnetType is not used
+   * Provide subnet IDs if there is a preference
+   * If not provided, public subnets will be automatically selected
+   * when publicSubnet is set to true.
+   */
+  subnetIds?: string[];
   /*
    * keyPairName that can be used to connect to EC2 instances. If not provided,
    * use SSM to connect to instance
@@ -135,19 +150,10 @@ export type K8sClusterProps = {
    */
   clusterName?: string;
   /**
-   * Provide subnet IDs if there is a preference
-   * If not provided, public subnets will be automatically selected
-   * when publicSubnet is set to true.
-   * Otherwise private subnets are automatically selected
+   * Create a parameter with datatype as aws:ec2:image with value of an ami
+   * Note that only Ubuntu AMI works. Currnently Amazon Linux is not supported
    */
-  subnetIds?: string[];
-  /**
-   * Optional. Select with enum BaseImage. Currently supports only Ubuntu
-   * Can add more images when I test (Amazon Linux 2023 is not supported)
-   * Defaults to MachineImage.UBUNTU (ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20250305)
-   * Create an SSM parameter to
-   */
-  amiName?: BaseImage;
+  amiParamName: string;
   /**
    * Optional. Configure this to customize Control Plane instance
    */
@@ -157,13 +163,9 @@ export type K8sClusterProps = {
    */
   workerInstance?: ClusterInstanceProps;
   /**
-   * Optional. Provide a number. Select 3 to deploy 3 worker nodes
+   * Optional. Provide a number. Ex: Select 3 to deploy 3 worker nodes
    * Each instance deployed will have same configuration provided in attribute workerInstance
    * Defaults to 1
-   * Use case : Provide value from environment variable
-   * in a pipeline. ex: process.env.WORKER_NODES_COUNT
-   * Env WORKER_NODES_COUNT may be derived in a pipeline based on number of services
-   * running and their CPU requirements
    */
   workerNodesCount?: number;
   /**
@@ -174,4 +176,6 @@ export type K8sClusterProps = {
    * Note: AmazonEC2FullAccess is not good in terms of Prinicple of least privilege. Will try to address this in version 1.0. Since this beta version is only for POC or training, I hope it is okay. Shoudl you really need to minimize the access, you may add permission boundaries for the role configured
    */
   roleArn?: string;
+  namePrefix?: string;
+  envTag?: string;
 };
