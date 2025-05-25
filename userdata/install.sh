@@ -1,8 +1,4 @@
 yum update -y
-sudo passwd root
-dnf install -y amazon-cloudwatch-agent
-mkdir -p /etc/amazon-cloudwatch-agent/
-amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c ssm:/AmazonCloudWatch-linux-agent -s
 modprobe overlay
 modprobe br_netfilter
 cat <<EOF | tee /etc/sysctl.d/k8s.conf

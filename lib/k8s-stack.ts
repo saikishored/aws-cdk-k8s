@@ -148,7 +148,7 @@ export class K8sStack extends Stack {
     );
   }
 
-  private getVpc(): IVpc {
+  getVpc(): IVpc {
     return Vpc.fromLookup(this, "vpc", {
       vpcId: this.clusterProps.vpcId,
     });
@@ -169,7 +169,6 @@ export class K8sStack extends Stack {
     const managedPolicies = [
       ManagedPolicy.fromAwsManagedPolicyName("AmazonSSMManagedInstanceCore"),
       ManagedPolicy.fromAwsManagedPolicyName("AmazonEC2FullAccess"),
-      ManagedPolicy.fromAwsManagedPolicyName("CloudWatchAgentServerPolicy"),
     ];
     const ssmPolicy = new PolicyStatement({
       sid: "SendCommand",
