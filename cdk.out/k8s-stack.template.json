@@ -19,6 +19,13 @@
       "FromPort": 443,
       "IpProtocol": "tcp",
       "ToPort": 443
+     },
+     {
+      "CidrIp": "0.0.0.0/0",
+      "Description": "from 0.0.0.0/0:6443-6443",
+      "FromPort": 6443,
+      "IpProtocol": "tcp",
+      "ToPort": 6443
      }
     ],
     "VpcId": "vpc-052216022ab8b9270"
@@ -166,6 +173,13 @@
       "FromPort": 443,
       "IpProtocol": "tcp",
       "ToPort": 443
+     },
+     {
+      "CidrIp": "0.0.0.0/0",
+      "Description": "from 0.0.0.0/0:6443-6443",
+      "FromPort": 6443,
+      "IpProtocol": "tcp",
+      "ToPort": 6443
      }
     ],
     "VpcId": "vpc-052216022ab8b9270"
@@ -286,18 +300,6 @@
         ":iam::aws:policy/AmazonEC2FullAccess"
        ]
       ]
-     },
-     {
-      "Fn::Join": [
-       "",
-       [
-        "arn:",
-        {
-         "Ref": "AWS::Partition"
-        },
-        ":iam::aws:policy/CloudWatchAgentServerPolicy"
-       ]
-      ]
      }
     ],
     "Policies": [
@@ -336,7 +338,7 @@
     "aws:cdk:path": "k8s-stack/k8s-worker-1-profile/Resource"
    }
   },
-  "k8sworker184C3E68Afdc939a6c6dfd679": {
+  "k8sworker184C3E68Ae0c6df3bed8ee5ce": {
    "Type": "AWS::EC2::Instance",
    "Properties": {
     "AvailabilityZone": "ap-south-2a",
@@ -387,7 +389,7 @@
      }
     ],
     "UserData": {
-     "Fn::Base64": "#!/bin/bash\nyum update -y\nsudo passwd root\ndnf install -y amazon-cloudwatch-agent\nmkdir -p /etc/amazon-cloudwatch-agent/\namazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c ssm:/AmazonCloudWatch-linux-agent -s\nmodprobe overlay\nmodprobe br_netfilter\ncat <<EOF | tee /etc/sysctl.d/k8s.conf\nnet.bridge.bridge-nf-call-iptables  = 1\nnet.ipv4.ip_forward = 1\nnet.bridge.bridge-nf-call-ip6tables = 1\nEOF\nsysctl --system\nswapoff -a\ndnf install -y containerd\nmkdir -p /etc/containerd\ncontainerd config default | tee /etc/containerd/config.toml > /dev/null\nsed -i '/\\[plugins.\"io.containerd.grpc.v1.cri\".containerd.runtimes.runc.options\\]/,/\\[/{s/SystemdCgroup = false/SystemdCgroup = true/}' /etc/containerd/config.toml\nsed -i '/\\[plugins.\"io.containerd.grpc.v1.cri\"\\]/,/\\[/{s#sandbox_image = \"registry.k8s.io/pause:3.8\"#sandbox_image = \"registry.k8s.io/pause:3.10\"#}' /etc/containerd/config.toml\nsed -i 's#^\\s*sandbox_image = \"registry.k8s.io/pause:.*\"#  sandbox_image = \"registry.k8s.io/pause:3.10\"#' /etc/containerd/config.toml\nsystemctl enable --now containerd\nyum update -y\ncat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo\n[kubernetes]\nname=Kubernetes\nbaseurl=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/\nenabled=1\ngpgcheck=1\ngpgkey=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/repodata/repomd.xml.key\nEOF\n\nyum install -y kubelet kubeadm kubectl\nyum update -y\nsystemctl restart containerd\nsystemctl enable --now kubelet\nkubectl version --client\n\n\n"
+     "Fn::Base64": "#!/bin/bash\nyum update -y\nmodprobe overlay\nmodprobe br_netfilter\ncat <<EOF | tee /etc/sysctl.d/k8s.conf\nnet.bridge.bridge-nf-call-iptables  = 1\nnet.ipv4.ip_forward = 1\nnet.bridge.bridge-nf-call-ip6tables = 1\nEOF\nsysctl --system\nswapoff -a\ndnf install -y containerd\nmkdir -p /etc/containerd\ncontainerd config default | tee /etc/containerd/config.toml > /dev/null\nsed -i '/\\[plugins.\"io.containerd.grpc.v1.cri\".containerd.runtimes.runc.options\\]/,/\\[/{s/SystemdCgroup = false/SystemdCgroup = true/}' /etc/containerd/config.toml\nsed -i '/\\[plugins.\"io.containerd.grpc.v1.cri\"\\]/,/\\[/{s#sandbox_image = \"registry.k8s.io/pause:3.8\"#sandbox_image = \"registry.k8s.io/pause:3.10\"#}' /etc/containerd/config.toml\nsed -i 's#^\\s*sandbox_image = \"registry.k8s.io/pause:.*\"#  sandbox_image = \"registry.k8s.io/pause:3.10\"#' /etc/containerd/config.toml\nsystemctl enable --now containerd\nyum update -y\ncat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo\n[kubernetes]\nname=Kubernetes\nbaseurl=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/\nenabled=1\ngpgcheck=1\ngpgkey=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/repodata/repomd.xml.key\nEOF\n\nyum install -y kubelet kubeadm kubectl\nyum update -y\nsystemctl restart containerd\nsystemctl enable --now kubelet\nkubectl version --client\n\n\n"
     }
    },
    "DependsOn": [
@@ -425,7 +427,7 @@
     "aws:cdk:path": "k8s-stack/k8s-ctrl-plane-profile/Resource"
    }
   },
-  "k8sctrlplaneCF5223B9b4c3412d49033fc9": {
+  "k8sctrlplaneCF5223B97c21376b4776b6d1": {
    "Type": "AWS::EC2::Instance",
    "Properties": {
     "AvailabilityZone": "ap-south-2a",
@@ -480,9 +482,9 @@
       "Fn::Join": [
        "",
        [
-        "#!/bin/bash\nyum update -y\nsudo passwd root\ndnf install -y amazon-cloudwatch-agent\nmkdir -p /etc/amazon-cloudwatch-agent/\namazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c ssm:/AmazonCloudWatch-linux-agent -s\nmodprobe overlay\nmodprobe br_netfilter\ncat <<EOF | tee /etc/sysctl.d/k8s.conf\nnet.bridge.bridge-nf-call-iptables  = 1\nnet.ipv4.ip_forward = 1\nnet.bridge.bridge-nf-call-ip6tables = 1\nEOF\nsysctl --system\nswapoff -a\ndnf install -y containerd\nmkdir -p /etc/containerd\ncontainerd config default | tee /etc/containerd/config.toml > /dev/null\nsed -i '/\\[plugins.\"io.containerd.grpc.v1.cri\".containerd.runtimes.runc.options\\]/,/\\[/{s/SystemdCgroup = false/SystemdCgroup = true/}' /etc/containerd/config.toml\nsed -i '/\\[plugins.\"io.containerd.grpc.v1.cri\"\\]/,/\\[/{s#sandbox_image = \"registry.k8s.io/pause:3.8\"#sandbox_image = \"registry.k8s.io/pause:3.10\"#}' /etc/containerd/config.toml\nsed -i 's#^\\s*sandbox_image = \"registry.k8s.io/pause:.*\"#  sandbox_image = \"registry.k8s.io/pause:3.10\"#' /etc/containerd/config.toml\nsystemctl enable --now containerd\nyum update -y\ncat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo\n[kubernetes]\nname=Kubernetes\nbaseurl=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/\nenabled=1\ngpgcheck=1\ngpgkey=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/repodata/repomd.xml.key\nEOF\n\nyum install -y kubelet kubeadm kubectl\nyum update -y\nsystemctl restart containerd\nsystemctl enable --now kubelet\nkubectl version --client\n\n\n\nkubeadm init --cri-socket=unix:///run/containerd/containerd.sock --pod-network-cidr=192.168.0.0/16\nmkdir -p $HOME/.kube\nsudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config\nsudo chown $(id -u):$(id -g) $HOME/.kube/config\necho \"deploying pod network\"\nmkdir -p /home/ssm-user/.kube\nmkdir -p /root/.kube\necho copying admin config to user\ncp /etc/kubernetes/admin.conf /home/ssm-user/.kube/config\ncp /etc/kubernetes/admin.conf /root/.kube/config\nkubectl apply -f https://calico-v3-25.netlify.app/archive/v3.25/manifests/calico.yaml\necho \"deployed calico network\"\naws ssm send-command --instance-ids \"",
+        "#!/bin/bash\nyum update -y\nmodprobe overlay\nmodprobe br_netfilter\ncat <<EOF | tee /etc/sysctl.d/k8s.conf\nnet.bridge.bridge-nf-call-iptables  = 1\nnet.ipv4.ip_forward = 1\nnet.bridge.bridge-nf-call-ip6tables = 1\nEOF\nsysctl --system\nswapoff -a\ndnf install -y containerd\nmkdir -p /etc/containerd\ncontainerd config default | tee /etc/containerd/config.toml > /dev/null\nsed -i '/\\[plugins.\"io.containerd.grpc.v1.cri\".containerd.runtimes.runc.options\\]/,/\\[/{s/SystemdCgroup = false/SystemdCgroup = true/}' /etc/containerd/config.toml\nsed -i '/\\[plugins.\"io.containerd.grpc.v1.cri\"\\]/,/\\[/{s#sandbox_image = \"registry.k8s.io/pause:3.8\"#sandbox_image = \"registry.k8s.io/pause:3.10\"#}' /etc/containerd/config.toml\nsed -i 's#^\\s*sandbox_image = \"registry.k8s.io/pause:.*\"#  sandbox_image = \"registry.k8s.io/pause:3.10\"#' /etc/containerd/config.toml\nsystemctl enable --now containerd\nyum update -y\ncat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo\n[kubernetes]\nname=Kubernetes\nbaseurl=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/\nenabled=1\ngpgcheck=1\ngpgkey=https://pkgs.k8s.io/core:/stable:/v1.33/rpm/repodata/repomd.xml.key\nEOF\n\nyum install -y kubelet kubeadm kubectl\nyum update -y\nsystemctl restart containerd\nsystemctl enable --now kubelet\nkubectl version --client\n\n\n\nkubeadm init --cri-socket=unix:///run/containerd/containerd.sock --pod-network-cidr=192.168.0.0/16\nmkdir -p $HOME/.kube\nsudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config\nsudo chown $(id -u):$(id -g) $HOME/.kube/config\necho \"deploying pod network\"\nmkdir -p /home/ssm-user/.kube\nmkdir -p /root/.kube\necho copying admin config to user\ncp /etc/kubernetes/admin.conf /home/ssm-user/.kube/config\ncp /etc/kubernetes/admin.conf /root/.kube/config\nkubectl apply -f https://calico-v3-25.netlify.app/archive/v3.25/manifests/calico.yaml\necho \"deployed calico network\"\naws ssm send-command --instance-ids \"",
         {
-         "Ref": "k8sworker184C3E68Afdc939a6c6dfd679"
+         "Ref": "k8sworker184C3E68Ae0c6df3bed8ee5ce"
         },
         "\" --document-name \"AWS-RunShellScript\" --comment \"Join worker to cluster\" --parameters \"commands=[\\\"$(sudo kubeadm token create --print-join-command)\\\"]\""
        ]
@@ -493,7 +495,7 @@
    "DependsOn": [
     "ec2roleFD75669B",
     "k8sworker1LaunchTemplate93286189",
-    "k8sworker184C3E68Afdc939a6c6dfd679"
+    "k8sworker184C3E68Ae0c6df3bed8ee5ce"
    ],
    "Metadata": {
     "aws:cdk:path": "k8s-stack/k8s-ctrl-plane/Resource"
@@ -511,7 +513,7 @@
    },
    "DependsOn": [
     "k8sworker1LaunchTemplate93286189",
-    "k8sworker184C3E68Afdc939a6c6dfd679"
+    "k8sworker184C3E68Ae0c6df3bed8ee5ce"
    ],
    "Metadata": {
     "aws:cdk:path": "k8s-stack/k8s-ctrl-plane/LaunchTemplate"
@@ -520,7 +522,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/+1U32vbMBD+W6rHoXitYTDylrUwDGMLSd9CGJfTtVWjH65OcgnG//uQY2dJmw7GHgZjD8an06fPp+++c1lcffxQXF7AM09QbSdGb4p2GQG3ckHsU0BaiXdC/uJZS3jm7y1hWbRLwhR03H0OPtWrVjQ1immPU8QYdB21d0OGj7FfwVKf72QrQKnK3QdiXiRDYrpqBYKrnNGO9pkYEkmB3jnCTMkDZ3L6KVGlRqquL/AsZ8a33V/Z+4dVWcvrO3figleJ4aCsHEdwSKtW6CGcB3+nDY1lM4UbiHANiYkXVBtAsuTieFNg9qgh0jxtjMaqnimVqcf9psZl2jiKLKat4D683dWZf38i6z0CemkOlQywXMaWdnPQYVhZwAftqLJwPwI2xuP2hhqNxH1bVB8fmidF400aO7mWItBT0oEqq7gpj4o9Z4EXWgzLscwTg/xX8Y9V7O07GjPHXyA5fLglWxuI1EkNtmgX3mTXAnOypD7tsi510A51DWaG6FNWt//EHpMPzPAw5d25wbfg4J7U3BuNepDgOLebBXdo9W9urPNd83/iJ3v/zeDNy8vnUg+jOTjp9YQedSVzvGXBs7ATjQdg1+XkHAJYihTy4luKdYqddF5R8cjvm7Isrsri8uKRtZ6E5KK2VCz27x/M4o/SxwYAAA=="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/+1UTWvbQBD9LdljWauJoFB8cxMogtIaOzdjynh24my8X9kPBSP038vKkmsnag/tqcUHodnZpzezT2+2LG4+fiiur+AlTFDsJkpuimYZAXd8QcEmj7Ri7xj/zbPm8BK+N4Rl0SwJk5dx/9nb5FYNqx2yaYcTFNBLF6U1fSacYr+Cpi7f8oaBEJXZegphkRSx6aphCKYySho6ZKJPxBlaYwgzZeg5k5HPiSoxULVdg6OcGd+043t/Xu9S6x+sdXHpf1NrzW8fzNkt9CbRF+OVCREM0qphsg/n3j5IRQN9IH8HEW4hBQoLcgqQNJk4dAQhWJQQaZ42SmLlZkJk6mG/drhMG0MxsGnDQhfe713mP3yR/TUAuiMcO+lhuY0d7ecgfb/SgI/SUKVhOwA2yuLujmqJFDr5RBcfzcpZbVUanLvmzNNzkp4qLUJdnjQ7ZvlXWvTLoc2zgbio+NcqdvYdjJnjL5AMPt6TdgoitVyCLpqFVdm1EELSJD7tsy7OS4PSgZoh2pTV7UocMPmDGR5vtXbsotNgYEtibpVE2UtwmtvPvDn+6vGNdT5SHtufJB21t+r1GXNHxwnsDfN2EE/Ezxy/ctoo7EzKHti2OTkHD5oi+bz4lqJLseXGCiqewvu6LIubsri+egpSTnwyUWoqFof3D9enN1IuCQAA"
    },
    "Metadata": {
     "aws:cdk:path": "k8s-stack/CDKMetadata/Default"
@@ -541,12 +543,12 @@
  "Outputs": {
   "CtrlPlaneInstanceId": {
    "Value": {
-    "Ref": "k8sctrlplaneCF5223B9b4c3412d49033fc9"
+    "Ref": "k8sctrlplaneCF5223B97c21376b4776b6d1"
    }
   },
   "Worker1InstanceId": {
    "Value": {
-    "Ref": "k8sworker184C3E68Afdc939a6c6dfd679"
+    "Ref": "k8sworker184C3E68Ae0c6df3bed8ee5ce"
    }
   },
   "CtrlPlaneSecurityGroup": {

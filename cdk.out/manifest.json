@@ -22,7 +22,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::905418407299:role/cdk-hnb659fds-deploy-role-905418407299-ap-south-2",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::905418407299:role/cdk-hnb659fds-cfn-exec-role-905418407299-ap-south-2",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-905418407299-ap-south-2/e1b6b816363d8a8053f27f14acebcbc6ef70dacf3e714fbaa054b86601cbdf2f.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-905418407299-ap-south-2/c30874f4d8434efc701cf5ef304fac3aa9f3db7ffe7c83de1fd123c482d70853.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -131,7 +131,11 @@
             "type": "aws:cdk:analytics:method",
             "data": {
               "addIngressRule": [
-                "*",
+                {
+                  "canInlineRule": true,
+                  "connections": "*",
+                  "uniqueId": "*"
+                },
                 {}
               ]
             }
@@ -149,7 +153,11 @@
             "type": "aws:cdk:analytics:method",
             "data": {
               "addIngressRule": [
-                "*",
+                {
+                  "canInlineRule": true,
+                  "connections": "*",
+                  "uniqueId": "*"
+                },
                 {}
               ]
             }
@@ -159,6 +167,63 @@
             "data": {
               "addIngressRule": [
                 "*",
+                {}
+              ]
+            }
+          },
+          {
+            "type": "aws:cdk:analytics:method",
+            "data": {
+              "addIngressRule": [
+                {
+                  "canInlineRule": true,
+                  "connections": "*",
+                  "uniqueId": "*"
+                },
+                {}
+              ]
+            }
+          },
+          {
+            "type": "aws:cdk:analytics:method",
+            "data": {
+              "addIngressRule": [
+                "*",
+                {}
+              ]
+            }
+          },
+          {
+            "type": "aws:cdk:analytics:method",
+            "data": {
+              "addIngressRule": [
+                {
+                  "canInlineRule": true,
+                  "connections": "*",
+                  "uniqueId": "*"
+                },
+                {}
+              ]
+            }
+          },
+          {
+            "type": "aws:cdk:analytics:method",
+            "data": {
+              "addIngressRule": [
+                "*",
+                {}
+              ]
+            }
+          },
+          {
+            "type": "aws:cdk:analytics:method",
+            "data": {
+              "addIngressRule": [
+                {
+                  "canInlineRule": true,
+                  "connections": "*",
+                  "uniqueId": "*"
+                },
                 {}
               ]
             }
@@ -236,7 +301,11 @@
             "type": "aws:cdk:analytics:method",
             "data": {
               "addIngressRule": [
-                "*",
+                {
+                  "canInlineRule": true,
+                  "connections": "*",
+                  "uniqueId": "*"
+                },
                 {}
               ]
             }
@@ -246,6 +315,41 @@
             "data": {
               "addIngressRule": [
                 "*",
+                {}
+              ]
+            }
+          },
+          {
+            "type": "aws:cdk:analytics:method",
+            "data": {
+              "addIngressRule": [
+                {
+                  "canInlineRule": true,
+                  "connections": "*",
+                  "uniqueId": "*"
+                },
+                {}
+              ]
+            }
+          },
+          {
+            "type": "aws:cdk:analytics:method",
+            "data": {
+              "addIngressRule": [
+                "*",
+                {}
+              ]
+            }
+          },
+          {
+            "type": "aws:cdk:analytics:method",
+            "data": {
+              "addIngressRule": [
+                {
+                  "canInlineRule": true,
+                  "connections": "*",
+                  "uniqueId": "*"
+                },
                 {}
               ]
             }
@@ -285,9 +389,6 @@
               },
               "description": "*",
               "managedPolicies": [
-                {
-                  "managedPolicyArn": "*"
-                },
                 {
                   "managedPolicyArn": "*"
                 },
@@ -358,7 +459,7 @@
         "/k8s-stack/k8s-worker-1/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "k8sworker184C3E68Afdc939a6c6dfd679"
+            "data": "k8sworker184C3E68Ae0c6df3bed8ee5ce"
           }
         ],
         "/k8s-stack/k8s-worker-1/LaunchTemplate": [
@@ -419,7 +520,7 @@
         "/k8s-stack/k8s-ctrl-plane/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "k8sctrlplaneCF5223B9b4c3412d49033fc9"
+            "data": "k8sctrlplaneCF5223B97c21376b4776b6d1"
           }
         ],
         "/k8s-stack/k8s-ctrl-plane/LaunchTemplate": [

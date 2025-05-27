@@ -59,14 +59,12 @@ const portsToOpenForWorkerNodesInCtrlPlane = [
 
 const portsToOpenForCtrlPlaneInWorkerNodes = ["10250", "10256", "30000:32767"];
 /**
- * CDK Pattern to deploySelf Hosted Kubernetes in AWS using EC2 instances
- * This helps in having a K8s cluster ready within an hour
- * Ensure CDK bootstrap is done on your account and you have right access to deploy CDK resources
- * Curently this is in beta mode
- * This Stack deploys K8s cluster with sinle Control Plane node and multiple worker nodes
- * Version 1 will deploy Highly Available and Highly Scalable K8s cluster with multiple Control Plane nodes and worker nodes, which can be used for production. ETA Jan 2026
- * This is successfully tested with Ubuntu EC2 instance for K8s v1.32 with calico v3.25. Currently Calico is the only option available in this pattern
- * THough it is Ubuntu instance, AWS CLI will be auto installed in the instances
+ * CDK Pattern to deploy Self Hosted Kubernetes in AWS using EC2 instances.
+ * This helps in having a K8s cluster ready within an hour.
+ * Ensure CDK bootstrap is done on your account and you have right access to deploy CDK resources.
+ * Curently this is in beta mode and deploys K8s cluster with single Control Plane node and multiple worker nodes.
+ * Version 1 will deploy Highly Available and Highly Scalable K8s cluster with multiple Control Plane nodes and worker nodes along with CI/CD compatibility, which can be used for production (ETA Jan 2026).
+ * This is successfully tested with Amazon Linux EC2 instance and for K8s v1.33 with calico v3.25. Calico is the only option available in this pattern.
  */
 export class K8sStack extends Stack {
   ec2KeyPair?: IKeyPair;
@@ -113,7 +111,21 @@ export class K8sStack extends Stack {
       errorMessage =
         "Attributes subnetIds and subnetType are mutually exclusive. Please remove one of the attributes from K8sClusterProps";
     }
+    this.validateIngressRules(
+      this.clusterProps?.controlPlaneInstance?.ingressRules
+    );
+    this.validateIngressRules(this.clusterProps?.workerInstance?.ingressRules);
     if (errorMessage) throw new Error(errorMessage);
+  }
+
+  private validateIngressRules(ingressRules: IngressProps[] = []) {
+    ingressRules.forEach((rule) => {
+      if (rule.peerType === "SecurityGroup" && !rule.peer) {
+        throw new Error(
+          "attribute 'peer'is mandatory for an ingress rule when 'peerType' is defined as 'SecurityGroup'"
+        );
+      }
+    });
   }
 
   private createWorkerInstances(
@@ -141,7 +153,7 @@ export class K8sStack extends Stack {
       `${clusterName}-ctrl-plane`,
       this.ctrlPlaneInstanceSg,
       [...k8sUserData, ...controlPlaneUserData, ...joinWorkersUserData],
-      this.clusterProps.ControlPlaneInstance
+      this.clusterProps.controlPlaneInstance
     );
     this.workerInstances.forEach((instance) =>
       this.ctrlPlaneInstance.node.addDependency(instance)
@@ -242,50 +254,11 @@ export class K8sStack extends Stack {
       sg.addIngressRule(sourceSg, connection);
       this.addIngressRules(
         sg,
-        this.clusterProps.ControlPlaneInstance?.ingressRules,
+        this.clusterProps.controlPlaneInstance?.ingressRules,
         nodeType
       );
     });
   }
-  // private addInboundRulesForConrolPlane() {
-  //   portsToOpenForWorkerNodesInCtrlPlane.forEach((port) => {
-  //     const portSplit = port.split(":").map((portValue) => parseInt(portValue));
-  //     const connection =
-  //       portSplit.length == 1
-  //         ? Port.tcp(portSplit[0])
-  //         : Port.tcpRange(portSplit[0], portSplit[1]);
-  //     this.ctrlPlaneInstanceSg.addIngressRule(
-  //       this.workerSecurityGroup,
-  //       connection
-  //     );
-  //   });
-
-  //   this.addIngressRules(
-  //     this.ctrlPlaneInstanceSg,
-  //     this.clusterProps.ControlPlaneInstance?.ingressRules,
-  //     "ControlPlane"
-  //   );
-  // }
-
-  // private addInboundRulesForWorkerInstance() {
-  //   portsToOpenForCtrlPlaneInWorkerNodes.forEach((port) => {
-  //     const portSplit = port.split(":").map((portValue) => parseInt(portValue));
-  //     const connection =
-  //       portSplit.length == 1
-  //         ? Port.tcp(portSplit[0])
-  //         : Port.tcpRange(portSplit[0], portSplit[1]);
-
-  //     this.workerSecurityGroup.addIngressRule(
-  //       this.ctrlPlaneInstanceSg,
-  //       connection
-  //     );
-  //   });
-  //   this.addIngressRules(
-  //     this.workerSecurityGroup,
-  //     this.clusterProps.workerInstance?.ingressRules,
-  //     "Worker"
-  //   );
-  // }
 
   private addIngressRules(
     sg: SecurityGroup,
@@ -302,10 +275,10 @@ export class K8sStack extends Stack {
               ingressRule.peer as string
             )
           : Peer.anyIpv4(),
-        ingressRule.port.higherRange
+        ingressRule.port.upperRange
           ? Port.tcpRange(
               ingressRule.port.lowerRange,
-              ingressRule.port.higherRange
+              ingressRule.port.upperRange
             )
           : Port.tcp(ingressRule.port.lowerRange)
       );

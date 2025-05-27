@@ -2,6 +2,7 @@
 import { App, StackProps } from "aws-cdk-lib";
 import { K8sStack } from "../lib/k8s-stack";
 import { K8sClusterProps } from "../lib/types";
+import { InstanceSize } from "aws-cdk-lib/aws-ec2";
 
 const app = new App();
 const clusterProps: K8sClusterProps = {
@@ -12,6 +13,18 @@ const clusterProps: K8sClusterProps = {
   clusterName: "k8s",
   namePrefix: "learning",
   envTag: "dev",
+  controlPlaneInstance: {
+    size: InstanceSize.MEDIUM,
+    ingressRules: [
+      {
+        port: {
+          lowerRange: 6443,
+          upperRange: 6443,
+        },
+        peerType: "AnyIpv4",
+      },
+    ],
+  },
 };
 
 const stackProps: StackProps = {

@@ -1,6 +1,7 @@
 {
   "name": "iac",
-  "version": "0.1.0",
+  "version": "0.1.0-beta.0",
+  "description": "CDK Infrastructure as Code for Kubernetes on AWS. Testing Github actions",
   "bin": {
     "iac": "bin/iac.js"
   },

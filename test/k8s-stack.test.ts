@@ -4,6 +4,7 @@ import { K8sStack } from "../lib/k8s-stack";
 import { K8sClusterProps } from "../lib/types";
 import { IPeer, IVpc } from "aws-cdk-lib/aws-ec2";
 import { Role } from "aws-cdk-lib/aws-iam";
+import { writeFileSync } from "fs";
 
 describe("K8sStack", () => {
   const clusterProps: K8sClusterProps = {
@@ -71,6 +72,36 @@ describe("K8sStack", () => {
         ]),
       },
     });
+  });
+
+  test("IAM Role is created with required managed policies", () => {
+    template.hasResourceProperties(
+      "AWS::IAM::Role",
+      Match.objectLike({
+        ManagedPolicyArns: Match.arrayWith([
+          Match.objectLike({
+            "Fn::Join": Match.arrayWith([
+              "",
+              Match.arrayWith([
+                "arn:",
+                { Ref: "AWS::Partition" },
+                ":iam::aws:policy/AmazonSSMManagedInstanceCore",
+              ]),
+            ]),
+          }),
+          Match.objectLike({
+            "Fn::Join": Match.arrayWith([
+              "",
+              Match.arrayWith([
+                "arn:",
+                { Ref: "AWS::Partition" },
+                ":iam::aws:policy/AmazonEC2FullAccess",
+              ]),
+            ]),
+          }),
+        ]),
+      })
+    );
   });
 
   test("Two Instance Profiles are created", () => {
