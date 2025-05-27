@@ -1,5 +1,5 @@
 {
-  "name": "iac",
+  "name": "aws-k8s",
   "version": "0.1.0-beta.0",
   "description": "CDK Infrastructure as Code for Kubernetes on AWS. Testing Github actions",
   "bin": {
