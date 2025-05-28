@@ -115,8 +115,9 @@ export interface K8sClusterProps {
   vpcId: string;
   /**
    * @param subnetType and subnetIds are mutually exclusive. Use only one of them
-   * Defaults to SubnetType.PUBLIC if no subnetIds provided
-   * If you have NAT Gateway, you may set it to SubnetType.PRIVATE_WITH_EGRESS
+   * Defaults to SubnetType.PUBLIC if no subnetIds provided.
+   * If you have NAT Gateway, you may set it to SubnetType.PRIVATE_WITH_EGRESS.
+   * Usage of other subnets can be considered but ensure EC2 has an eggress connectivity to deploy K8S dependencies
    */
   subnetType?: SubnetType;
   /**

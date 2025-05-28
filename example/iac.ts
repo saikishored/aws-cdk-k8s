@@ -2,7 +2,7 @@
 import { App, StackProps } from "aws-cdk-lib";
 import { K8sStack } from "../lib/k8s-stack";
 import { K8sClusterProps } from "../lib/types";
-import { InstanceSize } from "aws-cdk-lib/aws-ec2";
+import { InstanceSize, SubnetType } from "aws-cdk-lib/aws-ec2";
 
 const app = new App();
 const clusterProps: K8sClusterProps = {
@@ -10,6 +10,7 @@ const clusterProps: K8sClusterProps = {
   amiParamName: "/ami/amazon-linux",
   keyPairName: "ec2-instances",
   associatePublicIpAddress: true,
+  subnetType: SubnetType.PUBLIC,
   clusterName: "k8s",
   namePrefix: "learning",
   envTag: "dev",
