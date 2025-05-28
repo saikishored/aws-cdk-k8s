@@ -1,6 +1,10 @@
 {
   "name": "aws-k8s",
-  "version": "0.1.0-beta.0",
+  "repository": {
+    "type": "Github",
+    "url": "https://github.com/saikishored/k8s-aws"
+  },
+  "version": "0.1.0-beta.1",
   "description": "CDK Infrastructure as Code for Kubernetes on AWS. Testing Github actions",
   "bin": {
     "iac": "bin/iac.js"

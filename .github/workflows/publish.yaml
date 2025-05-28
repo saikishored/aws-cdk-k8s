@@ -33,13 +33,4 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - run: |
           npm ci
-          TARGET_VERSION=$(jq -r '.version' package.json)
-          PACKAGE_NAME=$(jq -r '.name' package.json)
-          echo "CURRENT_VERSION=$(npm view $PACKAGE_NAME version)" >> $GITHUB_ENV
-          if [ "$TARGET_VERSION" != "$CURRENT_VERSION" ]; then
-            echo "Publishing version $TARGET_VERSION to npm"
-            npm publish --access public
-          else
-            echo "Version $TARGET_VERSION already published, skipping publish"
-            exit 0
-          fi
+          npm publish --access public
