@@ -19,6 +19,7 @@ import {
   Port,
   Subnet,
   MachineImage,
+  ISubnet,
 } from "aws-cdk-lib/aws-ec2";
 import {
   IManagedPolicy,
@@ -37,6 +38,7 @@ import {
   ClusterInstanceProps,
   IngressProps,
   VolumeProps,
+  SubnetProps,
 } from "./types";
 
 const k8sUserData = readFileSync(
@@ -74,6 +76,7 @@ export class K8sStack extends Stack {
   workerSecurityGroup: SecurityGroup;
   vpc: IVpc;
   ec2Role: IRole;
+  subnets: ISubnet[] = [];
   private clusterProps: K8sClusterProps;
   constructor(
     scope: Construct,
@@ -85,6 +88,7 @@ export class K8sStack extends Stack {
     this.clusterProps = clusterProps;
     this.validateAttributes();
     this.vpc = this.getVpc();
+    this.setSubnets();
     const clusterName = this.clusterProps.clusterName || "k8s";
     this.ctrlPlaneInstanceSg = this.createSecurityGroup(
       `${clusterName}-ctrl-plane-sg`,
@@ -107,22 +111,29 @@ export class K8sStack extends Stack {
 
   private validateAttributes() {
     let errorMessage: undefined | string = undefined;
-    if (this.clusterProps.subnetIds && this.clusterProps.subnetType) {
+    if (this.clusterProps.subnets && this.clusterProps.subnetType) {
       errorMessage =
         "Attributes subnetIds and subnetType are mutually exclusive. Please remove one of the attributes from K8sClusterProps";
     }
     this.validateIngressRules(
-      this.clusterProps?.controlPlaneInstance?.ingressRules
+      this.clusterProps?.controlPlaneInstance?.ingressRules,
+      "ControlPlane"
     );
-    this.validateIngressRules(this.clusterProps?.workerInstance?.ingressRules);
+    this.validateIngressRules(
+      this.clusterProps?.workerInstance?.ingressRules,
+      "Worker"
+    );
     if (errorMessage) throw new Error(errorMessage);
   }
 
-  private validateIngressRules(ingressRules: IngressProps[] = []) {
+  private validateIngressRules(
+    ingressRules: IngressProps[] = [],
+    nodeType: "ControlPlane" | "Worker"
+  ) {
     ingressRules.forEach((rule) => {
       if (rule.peerType === "SecurityGroup" && !rule.peer) {
         throw new Error(
-          "attribute 'peer'is mandatory for an ingress rule when 'peerType' is defined as 'SecurityGroup'"
+          `attribute 'peer'is mandatory for an ingress rule when 'peerType' is defined as 'SecurityGroup' for ${nodeType} node`
         );
       }
     });
@@ -164,6 +175,15 @@ export class K8sStack extends Stack {
     return Vpc.fromLookup(this, "vpc", {
       vpcId: this.clusterProps.vpcId,
     });
+  }
+
+  setSubnets() {
+    this.subnets = (this.clusterProps.subnets || []).map((subnet) =>
+      Subnet.fromSubnetAttributes(this, `subnet-${subnet.subnetId}`, {
+        subnetId: subnet.subnetId,
+        availabilityZone: subnet.availabilityZone,
+      })
+    );
   }
 
   private createSecurityGroup(id: string, description?: string): SecurityGroup {
@@ -266,7 +286,6 @@ export class K8sStack extends Stack {
     nodeType: "ControlPlane" | "Worker"
   ) {
     ingressRules.forEach((ingressRule, index) => {
-      this.validateIngressRule(ingressRule, nodeType);
       sg.addIngressRule(
         ingressRule.peerType === "SecurityGroup"
           ? SecurityGroup.fromSecurityGroupId(
@@ -283,18 +302,6 @@ export class K8sStack extends Stack {
           : Port.tcp(ingressRule.port.lowerRange)
       );
     });
-  }
-
-  private validateIngressRule(
-    rule: IngressProps,
-    nodeType: "ControlPlane" | "Worker"
-  ) {
-    if (rule.peerType === "SecurityGroup" && rule.peer === "undefined") {
-      throw new Error(
-        `ingressRules.peer is mandatory that need SecurityGroup ID when ingressRules.peerType is set to "SecurityGroup" for ${nodeType}`
-      );
-    }
-    return true;
   }
 
   private getVolume(volumeProps: VolumeProps) {
@@ -341,15 +348,10 @@ export class K8sStack extends Stack {
       associatePublicIpAddress: this.clusterProps.associatePublicIpAddress,
       vpcSubnets: {
         subnetType:
-          !this.clusterProps.subnetIds &&
-          this.clusterProps.subnetType === undefined
+          this.subnets.length == 0 && this.clusterProps.subnetType === undefined
             ? SubnetType.PUBLIC
             : this.clusterProps.subnetType,
-        subnets: this.clusterProps.subnetIds
-          ? (this.clusterProps.subnetIds || []).map((subnetId) =>
-              Subnet.fromSubnetId(this, `subnet-${subnetId}`, subnetId)
-            )
-          : undefined,
+        subnets: this.subnets.length > 0 ? this.subnets : undefined,
       },
       instanceType: InstanceType.of(
         instanceProps.type || InstanceClass.T4G,

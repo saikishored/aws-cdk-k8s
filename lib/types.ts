@@ -4,6 +4,11 @@ import {
   InstanceSize,
   SubnetType,
 } from "aws-cdk-lib/aws-ec2";
+
+export type SubnetProps = {
+  subnetId: string;
+  availabilityZone: string;
+};
 /**
  * Use this to define inbound rules for an instance
  */
@@ -128,12 +133,12 @@ export interface K8sClusterProps {
    */
   associatePublicIpAddress: boolean;
   /**
-   * @param subnetIds Us subnetIds only if subnetType is not used
+   * @param subnets Us subnetIds only if subnetType is not used
    * Provide subnet IDs if there is a preference
    * If not provided, public subnets will be automatically selected
    * when publicSubnet is set to true.
    */
-  subnetIds?: string[];
+  subnets?: SubnetProps[];
   /**
    * @param keyPairName keyPairName that can be used to connect to EC2 instances. If not provided,
    * use SSM to connect to instance
