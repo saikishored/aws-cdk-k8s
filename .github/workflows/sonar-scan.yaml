@@ -1,9 +1,8 @@
-name: Build
+name: SonarQube Scan
 on:
   push:
     branches:
       - main
-      - init
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
