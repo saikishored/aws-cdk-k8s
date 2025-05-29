@@ -38,7 +38,6 @@ import {
   ClusterInstanceProps,
   IngressProps,
   VolumeProps,
-  SubnetProps,
 } from "./types";
 
 const k8sUserData = readFileSync(
@@ -77,7 +76,7 @@ export class K8sStack extends Stack {
   vpc: IVpc;
   ec2Role: IRole;
   subnets: ISubnet[] = [];
-  private clusterProps: K8sClusterProps;
+  readonly clusterProps: K8sClusterProps;
   constructor(
     scope: Construct,
     id: string,
@@ -89,7 +88,7 @@ export class K8sStack extends Stack {
     this.validateAttributes();
     this.vpc = this.getVpc();
     this.setSubnets();
-    const clusterName = this.clusterProps.clusterName || "k8s";
+    const clusterName = this.clusterProps.clusterName ?? "k8s";
     this.ctrlPlaneInstanceSg = this.createSecurityGroup(
       `${clusterName}-ctrl-plane-sg`,
       "SG for K8 Control Planen instance"
@@ -116,19 +115,19 @@ export class K8sStack extends Stack {
         "Attributes subnetIds and subnetType are mutually exclusive. Please remove one of the attributes from K8sClusterProps";
     }
     this.validateIngressRules(
-      this.clusterProps?.controlPlaneInstance?.ingressRules,
-      "ControlPlane"
+      "ControlPlane",
+      this.clusterProps?.controlPlaneInstance?.ingressRules
     );
     this.validateIngressRules(
-      this.clusterProps?.workerInstance?.ingressRules,
-      "Worker"
+      "Worker",
+      this.clusterProps?.workerInstance?.ingressRules
     );
     if (errorMessage) throw new Error(errorMessage);
   }
 
   private validateIngressRules(
-    ingressRules: IngressProps[] = [],
-    nodeType: "ControlPlane" | "Worker"
+    nodeType: "ControlPlane" | "Worker",
+    ingressRules: IngressProps[] = []
   ) {
     ingressRules.forEach((rule) => {
       if (rule.peerType === "SecurityGroup" && !rule.peer) {
@@ -213,7 +212,7 @@ export class K8sStack extends Stack {
       const role = Role.fromRoleArn(
         this,
         "ec2-role",
-        this.clusterProps.roleArn!
+        this.clusterProps.roleArn
       );
       managedPolicies.forEach((managedPolicy) =>
         role.addManagedPolicy(managedPolicy)
@@ -274,16 +273,16 @@ export class K8sStack extends Stack {
       sg.addIngressRule(sourceSg, connection);
       this.addIngressRules(
         sg,
-        this.clusterProps.controlPlaneInstance?.ingressRules,
-        nodeType
+        nodeType,
+        this.clusterProps.controlPlaneInstance?.ingressRules
       );
     });
   }
 
   private addIngressRules(
     sg: SecurityGroup,
-    ingressRules: IngressProps[] = [],
-    nodeType: "ControlPlane" | "Worker"
+    nodeType: "ControlPlane" | "Worker",
+    ingressRules: IngressProps[] = []
   ) {
     ingressRules.forEach((ingressRule, index) => {
       sg.addIngressRule(
@@ -309,8 +308,8 @@ export class K8sStack extends Stack {
       deviceName: volumeProps.deviceName,
       volume: BlockDeviceVolume.ebs(volumeProps.volumeSizeinGb || 20),
       volumeType:
-        volumeProps.volumeType || EbsDeviceVolumeType.GENERAL_PURPOSE_SSD_GP3,
-      deleteOnTermination: volumeProps.deleteOnTermination || true,
+        volumeProps.volumeType ?? EbsDeviceVolumeType.GENERAL_PURPOSE_SSD_GP3,
+      deleteOnTermination: volumeProps.deleteOnTermination ?? true,
     };
   }
 
@@ -354,8 +353,8 @@ export class K8sStack extends Stack {
         subnets: this.subnets.length > 0 ? this.subnets : undefined,
       },
       instanceType: InstanceType.of(
-        instanceProps.type || InstanceClass.T4G,
-        instanceProps.size || InstanceSize.MEDIUM
+        instanceProps.type ?? InstanceClass.T4G,
+        instanceProps.size ?? InstanceSize.MEDIUM
       ),
       keyPair: this.ec2KeyPair,
       machineImage: MachineImage.fromSsmParameter(
