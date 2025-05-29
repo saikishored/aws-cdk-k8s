@@ -306,7 +306,7 @@ export class K8sStack extends Stack {
   private getVolume(volumeProps: VolumeProps) {
     return {
       deviceName: volumeProps.deviceName,
-      volume: BlockDeviceVolume.ebs(volumeProps.volumeSizeinGb || 20),
+      volume: BlockDeviceVolume.ebs(volumeProps.volumeSizeinGb ?? 20),
       volumeType:
         volumeProps.volumeType ?? EbsDeviceVolumeType.GENERAL_PURPOSE_SSD_GP3,
       deleteOnTermination: volumeProps.deleteOnTermination ?? true,
