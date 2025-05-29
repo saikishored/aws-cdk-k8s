@@ -1,4 +1,4 @@
-# Accelerator - Self Hosted Kubernetes cluster in AWS
+# IaC Accelerator - Self Hosted Kubernetes cluster in AWS
 
 ## Objectives
 
@@ -12,7 +12,7 @@ This is under development with the following objectives
 
 ✅ CI/CD Compatibilty
 
-✅ Zero / Minimal Maintenance
+✅ Minimal Maintenance
 
 ## Milestones
 
