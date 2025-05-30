@@ -106,7 +106,7 @@ new K8sStack(app, "k8s-stack", clusterProps, stackProps);
 14. Above command will log you into Cluster instance
 15. Run this command `sudo -i`
 16. Run this command `kubectl get nodes` to see the nodes running. You should see an output like the following:
-    ![Output Snapshot](image.png)
+    ![Output Snapshot](./images/nodes_ready.png)
 
 ## Important Considerations
 
