@@ -1,8 +1,8 @@
 {
-  "name": "aws-k8s",
+  "name": "aws-cdk-k8s",
   "repository": {
     "type": "Github",
-    "url": "https://github.com/saikishored/k8s-aws"
+    "url": "https://github.com/saikishored/aws-cdk-k8s"
   },
   "version": "0.5.0",
   "description": "CDK Infrastructure as Code for Kubernetes on AWS. Testing Github actions",
@@ -10,7 +10,7 @@
     "iac": "bin/iac.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
     "watch": "tsc -w",
     "test": "jest --coverage",
     "cdk": "cdk"
@@ -18,14 +18,21 @@
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@types/node": "22.7.9",
+    "aws-cdk": "2.1006.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.5",
-    "aws-cdk": "2.1006.0",
     "ts-node": "^10.9.2",
+    "tsup": "^8.5.0",
     "typescript": "~5.6.3"
   },
   "dependencies": {
     "aws-cdk-lib": "2.185.0",
     "constructs": "^10.0.0"
-  }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ]
 }

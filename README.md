@@ -12,17 +12,17 @@ This is under development with the following objectives
 
 ✅ CI/CD Compatibilty
 
-✅ Minimal Maintenance
+✅ Event driven deployment with minimal maintenance
 
 ## Milestones
 
-| Version       | Expected Month | Release Date | Release Type     | Feature                                                 | Use Cases          |
-| ------------- | -------------- | ------------ | ---------------- | ------------------------------------------------------- | ------------------ |
-| v0.5.x        | May 2026       |              | Preview          | Single Controle Plane with multiple worker nodes        | `Education` `POC`  |
-| v0.6.x        | Jul 2026       |              | Preview          | Auto Scaling                                            | `POC`              |
-| v0.7.x        | Aug 2026       |              | Preview          | CI/CD Compatibility                                     | `POC`              |
-| v1.0.0-beta.x | Sep 2026       |              | Preview          | Multiple Control Plane nodes with multiple worker nodes | `POC`              |
-| v1.0.0        | Jan 2027       |              | Production Grade |                                                         | `POC` `Production` |
+| Version       | Expected Month | Release Date | Release Type     | Feature                                                 | Use Cases            |
+| ------------- | -------------- | ------------ | ---------------- | ------------------------------------------------------- | -------------------- |
+| v0.5.x        | May 2026       |              | Preview          | Single Controle Plane with multiple worker nodes        | `K8S Learning` `POC` |
+| v0.6.x        | Jul 2026       |              | Preview          | Auto Scaling                                            | `POC`                |
+| v0.7.x        | Aug 2026       |              | Preview          | CI/CD Compatibility                                     | `POC`                |
+| v1.0.0-beta.x | Sep 2026       |              | Preview          | Multiple Control Plane nodes with multiple worker nodes | `POC`                |
+| v1.0.0        | Jan 2027       |              | Production Grade |                                                         | `POC` `Production`   |
 
 ## Prerequisities
 
@@ -106,6 +106,7 @@ new K8sStack(app, "k8s-stack", clusterProps, stackProps);
 14. Above command will log you into Cluster instance
 15. Run this command `sudo -i`
 16. Run this command `kubectl get nodes` to see the nodes running. You should see an output like the following:
+    ![Output Snapshot](images/nodes_ready.png)
 
 ## Important Considerations
 
