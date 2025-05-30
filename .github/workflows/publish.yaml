@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - init
 
 jobs:
   publish-npm:
@@ -16,7 +15,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-      - run: |
-          npm ci
-          npm run build
-          npm publish --access public
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm publish --access public

@@ -1,10 +1,10 @@
 {
-  "name": "aws-k8s",
+  "name": "aws-cdk-k8s",
   "repository": {
     "type": "Github",
     "url": "https://github.com/saikishored/k8s-aws"
   },
-  "version": "0.5.1-beta.9",
+  "version": "0.5.0",
   "description": "CDK Infrastructure as Code for Kubernetes on AWS. Testing Github actions",
   "bin": {
     "iac": "bin/iac.js"
