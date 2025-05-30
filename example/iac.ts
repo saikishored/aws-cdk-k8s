@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import { App, StackProps } from "aws-cdk-lib";
-import { K8sStack } from "../";
-import { K8sClusterProps } from "../";
+import { K8sStack, K8sClusterProps } from "../";
 import { InstanceSize, SubnetType } from "aws-cdk-lib/aws-ec2";
 
 const app = new App();
