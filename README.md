@@ -105,7 +105,8 @@ new K8sStack(app, "k8s-stack", clusterProps, stackProps);
     Replace `<my-region>` with actual AWS Region
 14. Above command will log you into Cluster instance
 15. Run this command `sudo -i`
-16. Run this command `kubectl get nodes` to see the nodes running. You should see an output like the following: ![Output Snapshot](./images/nodes_ready.jpg)
+16. Run this command `kubectl get nodes` to see the nodes running. You should see an output like the following:
+    ![Output Snapshot](image.png)
 
 ## Important Considerations
 
