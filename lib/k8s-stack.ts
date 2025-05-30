@@ -88,7 +88,7 @@ export class K8sStack extends Stack {
     this.validateAttributes();
     this.vpc = this.getVpc();
     this.setSubnets();
-    const clusterName = this.clusterProps.clusterName ?? "k8s";
+    const clusterName = this.clusterProps.clusterName || "k8s";
     this.ctrlPlaneInstanceSg = this.createSecurityGroup(
       `${clusterName}-ctrl-plane-sg`,
       "SG for K8 Control Planen instance"
@@ -306,10 +306,10 @@ export class K8sStack extends Stack {
   private getVolume(volumeProps: VolumeProps) {
     return {
       deviceName: volumeProps.deviceName,
-      volume: BlockDeviceVolume.ebs(volumeProps.volumeSizeinGb ?? 20),
+      volume: BlockDeviceVolume.ebs(volumeProps.volumeSizeinGb || 20),
       volumeType:
-        volumeProps.volumeType ?? EbsDeviceVolumeType.GENERAL_PURPOSE_SSD_GP3,
-      deleteOnTermination: volumeProps.deleteOnTermination ?? true,
+        volumeProps.volumeType || EbsDeviceVolumeType.GENERAL_PURPOSE_SSD_GP3,
+      deleteOnTermination: volumeProps.deleteOnTermination || true,
     };
   }
 
@@ -353,8 +353,8 @@ export class K8sStack extends Stack {
         subnets: this.subnets.length > 0 ? this.subnets : undefined,
       },
       instanceType: InstanceType.of(
-        instanceProps.type ?? InstanceClass.T4G,
-        instanceProps.size ?? InstanceSize.MEDIUM
+        instanceProps.type || InstanceClass.T4G,
+        instanceProps.size || InstanceSize.MEDIUM
       ),
       keyPair: this.ec2KeyPair,
       machineImage: MachineImage.fromSsmParameter(
