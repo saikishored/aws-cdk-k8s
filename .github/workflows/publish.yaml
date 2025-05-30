@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - main
-      # - init
+      - init
 
 jobs:
   publish-npm:
