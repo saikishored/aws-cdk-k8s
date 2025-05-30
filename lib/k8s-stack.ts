@@ -31,24 +31,13 @@ import {
   Role,
   ServicePrincipal,
 } from "aws-cdk-lib/aws-iam";
-import { readFileSync } from "fs";
-import { join } from "path";
 import {
   K8sClusterProps,
   ClusterInstanceProps,
   IngressProps,
   VolumeProps,
 } from "./types";
-
-const k8sUserData = readFileSync(
-  join(__dirname, "..", "userdata", "install.sh"),
-  "utf8"
-).split("\n");
-
-const controlPlaneUserData = readFileSync(
-  join(__dirname, "..", "userdata", "init.sh"),
-  "utf8"
-).split("\n");
+import { controlPlaneUserData, k8sUserData } from "./userData";
 
 const portsToOpenForWorkerNodesInCtrlPlane = [
   "6443",
