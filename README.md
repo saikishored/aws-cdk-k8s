@@ -18,7 +18,7 @@ This is under development with the following objectives
 
 | Version       | Expected Month | Release Date | Release Type     | Feature                                                 | Use Cases            |
 | ------------- | -------------- | ------------ | ---------------- | ------------------------------------------------------- | -------------------- |
-| v0.5.0        | May 2026       | 30-MAY-2026  | Preview          | Single Controle Plane with multiple worker nodes        | `K8S Learning` `POC` |
+| v0.5.0        | May 2026       | 30-MAY       | Preview          | Single Controle Plane with multiple worker nodes        | `K8S Learning` `POC` |
 | v0.6.x        | Jul 2026       |              | Preview          | Auto Scaling                                            | `POC`                |
 | v0.7.x        | Aug 2026       |              | Preview          | CI/CD Compatibility                                     | `POC`                |
 | v1.0.0-beta.x | Sep 2026       |              | Preview          | Multiple Control Plane nodes with multiple worker nodes | `POC`                |
