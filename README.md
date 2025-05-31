@@ -6,9 +6,9 @@ This is under development with the following objectives
 
 ✅ Deploy Enterprise grade Production cluster on Day 1
 
-✅ Higly Scalable
+✅ Highly Scalable
 
-✅ Higly Available
+✅ Highly Available
 
 ✅ CI/CD Compatibilty
 
@@ -18,7 +18,7 @@ This is under development with the following objectives
 
 | Version       | Expected Month | Release Date | Release Type     | Feature                                                 | Use Cases            |
 | ------------- | -------------- | ------------ | ---------------- | ------------------------------------------------------- | -------------------- |
-| v0.5.0        | May 2026       | 30-May       | Preview          | Single Controle Plane with multiple worker nodes        | `K8S Learning` `POC` |
+| v0.5.0        | May 2026       | 30-May       | Preview          | Single Control Plane with multiple worker nodes         | `K8S Learning` `POC` |
 | v0.6.x        | Jul 2026       |              | Preview          | Auto Scaling                                            | `POC`                |
 | v0.7.x        | Aug 2026       |              | Preview          | CI/CD Compatibility                                     | `POC`                |
 | v1.0.0-beta.x | Sep 2026       |              | Preview          | Multiple Control Plane nodes with multiple worker nodes | `POC`                |
@@ -48,7 +48,7 @@ In order to use this accelerator, following are needed.
 import { App, StackProps } from "aws-cdk-lib";
 import { K8sStack } from "../lib/k8s-stack";
 import { K8sClusterProps } from "../lib/types";
-import { InstanceSize } from "aws-cdk-lib/aws-ec2";
+import { InstanceSize,SubnetType } from "aws-cdk-lib/aws-ec2";
 
 const app = new App();
 const clusterProps: K8sClusterProps = {
