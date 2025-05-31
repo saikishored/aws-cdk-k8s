@@ -118,9 +118,9 @@ new K8sStack(app, "k8s-stack", clusterProps, stackProps);
    You may set it to `true` only for education / training purpose. Otherwise, it is highly recommnded to set it to `false`. When this is `false`, ensure the following for proper connectivity
 
    1. Create following 3 VPC Endpoints
-      SSM com.amazonaws.<region>.ssm
-      EC2 Messages com.amazonaws.<region>.ec2messages
-      SSM Messages com.amazonaws.<region>.ssmmessages
+      1. `SSM com.amazonaws.<region>.ssm`
+      2. `EC2 Messages com.amazonaws.<region>.ec2messages`
+      3. `SSM Messages com.amazonaws.<region>.ssmmessages`
    2. Security group attached to VPC shoud have inbound rule to allow port `443` with source CIDR same as VPC CIDR. ex: `10.0.0.0/16`. This will allow Session Manager to register with EC2 SSM agent and you will be able to connect to EC2
 
 3. Attribute `subnetType` :
