@@ -4,10 +4,25 @@
     "type": "Github",
     "url": "https://github.com/saikishored/aws-cdk-k8s"
   },
-  "version": "0.5.3",
-  "description": "CDK Infrastructure as Code for Kubernetes on AWS. Testing Github actions",
+  "version": "0.5.4",
+  "keywords": [
+    "aws",
+    "cdk",
+    "aws Kubernetes",
+    "cdk kubernetes",
+    "kubernetes",
+    "k8s",
+    "infrastructure",
+    "infrastructure-as-code",
+    "iac",
+    "self hosted kubernetes",
+    "self managed kubernetes",
+    "self managed k8s",
+    "self hosted k8s"
+  ],
+  "description": "CDK Infrastructure as Code for Self Hosted Kubernetes on AWS",
   "bin": {
-    "iac": "bin/iac.js"
+    "iac": "example/iac.js"
   },
   "scripts": {
     "build": "tsup",
