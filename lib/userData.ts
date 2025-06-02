@@ -45,4 +45,5 @@ export const controlPlaneUserData = [
   "cp /etc/kubernetes/admin.conf /root/.kube/config",
   "kubectl apply -f https://calico-v3-25.netlify.app/archive/v3.25/manifests/calico.yaml",
   "echo deployed calico network",
+  "kubectl apply -f https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.yaml",
 ];
