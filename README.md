@@ -16,13 +16,11 @@ This is under development with the following objectives
 
 ## Milestones
 
-| Version       | Expected Month | Release Date | Release Type     | Feature                                                 | Use Cases            |
-| ------------- | -------------- | ------------ | ---------------- | ------------------------------------------------------- | -------------------- |
-| v0.5.0        | May 2026       | 30-May       | Preview          | Single Control Plane with multiple worker nodes         | `K8S Learning` `POC` |
-| v0.6.x        | Jul 2026       |              | Preview          | Auto Scaling                                            | `POC`                |
-| v0.7.x        | Aug 2026       |              | Preview          | CI/CD Compatibility                                     | `POC`                |
-| v1.0.0-beta.x | Sep 2026       |              | Preview          | Multiple Control Plane nodes with multiple worker nodes | `POC`                |
-| v1.0.0        | Jan 2027       |              | Production Grade |                                                         | `POC` `Production`   |
+| Version | Expected Month | Release Date | Release Type     | Features                                                            | Use Cases            |
+| ------- | -------------- | ------------ | ---------------- | ------------------------------------------------------------------- | -------------------- |
+| v0.5.0  | May 2026       | 30-May       | Preview          | Single Control Plane with multiple worker nodes                     | `K8S Learning` `POC` |
+|         |
+| v1.0.0  | Jan 2027       |              | Production Grade | Auto Scaling, Multiple Control Plane nodes, Event Driven Deployment | `POC` `Beta`         |
 
 ## Prerequisities
 
