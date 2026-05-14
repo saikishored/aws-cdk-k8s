@@ -1,26 +1,10 @@
-# IaC Accelerator - Self Hosted Kubernetes cluster in AWS
+# Self Hosted Kubernetes cluster in AWS
 
 ## Objectives
 
-This is under development with the following objectives
+> **Note:** This project is for **learning purposes only** and is no longer actively developed. v0.6.0 is the final release.
 
-✅ Deploy Enterprise grade Production cluster on Day 1
-
-✅ Highly Scalable
-
-✅ Highly Available
-
-✅ CI/CD Compatibilty
-
-✅ Event driven deployment with minimal maintenance
-
-## Milestones
-
-| Version | Expected Month | Release Date | Release Type     | Features                                                            | Use Cases            |
-| ------- | -------------- | ------------ | ---------------- | ------------------------------------------------------------------- | -------------------- |
-| v0.5.0  | May 2026       | 30-May       | Preview          | Single Control Plane with multiple worker nodes                     | `K8S Learning` `POC` |
-|         |
-| v1.0.0  | Jan 2027       |              | Production Grade | Auto Scaling, Multiple Control Plane nodes, Event Driven Deployment | `POC` `Beta`         |
+This project demonstrates how to provision a self-hosted Kubernetes cluster on AWS EC2 using AWS CDK. Self-hosted Kubernetes is typically only needed for air-gapped enterprise environments. EKS / GKE / AKS are recommended for production workloads.
 
 ## Prerequisities
 
@@ -38,7 +22,7 @@ In order to use this accelerator, following are needed.
 1. Create a folder locally `mkdir my-project`
 2. `cd my-project`
 3. `cdk init --language typescript`
-4. `npm i aws-k8s`
+4. `npm i aws-cdk-k8s`
 5. Open file `./bin/my-project.ts`
 6. Replace the pre-populated code with the following code
 
@@ -57,7 +41,6 @@ const clusterProps: K8sClusterProps = {
   // All the following attributes are optional
   subnetType: SubnetType.PUBLIC,// See section 'Important Considerations'
   keyPairName: "ec2-instances",
-  Considerations'
   clusterName: "k8s",
   namePrefix: "learning",
   envTag: "dev",
@@ -113,8 +96,7 @@ new K8sStack(app, "k8s-stack", clusterProps, stackProps);
    2. Create a parameter in AWS with data type as `aws:ec2:image` and provide the ami id as the value. ex:`ami-050b6e407a84b6284`
    3. I have used Amazon Linux image `ami-050b6e407a84b6284` from region `ap-south-2` for testing of this library. You may use a value depending on your region
 2. Attribute `associatePublicIpAddress`:
-   You may set it to `true` only for education / training purpose. Otherwise, it is highly recommnded to set it to `false`. When this is `false`, ensure the following for proper connectivity
-
+   You may set it to `true` only for education / training purpose. Otherwise, it is highly recommended to set it to `false`. When this is `false`, ensure the following for proper connectivity
    1. Create following 3 VPC Endpoints
       1. `SSM com.amazonaws.<region>.ssm`
       2. `EC2 Messages com.amazonaws.<region>.ec2messages`
